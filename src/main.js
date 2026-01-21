@@ -1,88 +1,114 @@
 import { Application, Container, Assets, Sprite, TextureStyle } from 'pixi.js';
 
-// 1. SETUP
+// 1. SETUP APP
 const app = new Application();
 await app.init({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    backgroundColor: 0xffd500, // Dark background
-    antialias: false, 
-    resolution: 1,
+    resizeTo: window,
+    backgroundColor: 0xffd700,
+    antialias: false,
+    resolution: window.devicePixelRatio || 1,
+    autoDensity: true,
 });
 document.body.appendChild(app.canvas);
 
-// GLOBAL PIXEL ART SETTING (Keeps it crisp)
+// GLOBAL SETTINGS
 TextureStyle.defaultOptions.scaleMode = 'nearest';
 
-// 2. CREATE A STAGE (The "World" Container)
-// We put everything in here so we can zoom/pan the whole world later
+// 2. THE WORLD CONTAINER
 const world = new Container();
+world.sortableChildren = true; 
 app.stage.addChild(world);
 
-// 3. LOAD ASSETS & BUILD
 async function setup() {
-    // 1. Load BOTH images now
+    // UPDATED ASSET LIST
     const textures = await Assets.load([
         '/assets/room_base.png',
-        '/assets/angad_character_temp.png',
+        '/assets/room_base_sofa.png',
+        '/assets/angad_character_temp3.png', 
     ]);
 
-    // 2. Setup the Room (Background)
+    // --- SETUP ROOM ---
     const room = new Sprite(textures['/assets/room_base.png']);
-    room.anchor.set(0.5); // Center of the image
-    room.x = app.screen.width / 2;
-    room.y = app.screen.height / 2;
-    room.scale.set(1.5); // Zoom in (optional)
-    
-    // Add room to the world FIRST so it's in the back
+    room.anchor.set(0.5);
+    room.zIndex = 0;
     world.addChild(room);
 
-    // 3. Setup Angad (The Character)
-    const char = new Sprite(textures['/assets/angad_character_temp.png']);
-
-    // THE ANCHOR TRICK:
-    // (0.5, 1) means "The X is the middle, the Y is the BOTTOM feet".
-    // This ensures his feet touch the specific coordinate we choose.
+    // --- SETUP ANGAD ---
+    const char = new Sprite(textures['/assets/angad_character_temp3.png']);
     char.anchor.set(0.5, 1); 
-    
-    // Match the room's scale
-    char.scale.set(4);
-
-    // 4. Position Him
-    // We start him exactly where the room is (dead center)
-    char.x = room.x;
-    char.y = room.y;
-
-    // Add him to the world SECOND so he appears ON TOP of the room
+    char.zIndex = 10;
+    char.scale.set(2); 
     world.addChild(char);
-    
-    // 5. Make him draggable (Temporary Test Tool)
-    // This lets you click and drag Angad around to find the perfect spot for his desk
+
+    // --- SETUP SOFA ---
+    const sofa = new Sprite(textures['/assets/room_base_sofa.png']);
+    sofa.anchor.set(0.5);
+    sofa.zIndex = 20;
+    world.addChild(sofa);
+
+    // --- RESTORE DRAGGING (SMART VERSION) ---
     char.eventMode = 'static';
     char.cursor = 'pointer';
     
     let isDragging = false;
-    char.on('pointerdown', () => isDragging = true);
-    window.addEventListener('pointerup', () => isDragging = false);
+
+    // Start Dragging
+    char.on('pointerdown', () => {
+        isDragging = true;
+        // Optional: Make him slightly transparent while dragging
+        char.alpha = 0.8; 
+    });
+
+    // Stop Dragging
+    // We attach this to 'window' so it stops even if you drag off the character
+    window.addEventListener('pointerup', () => {
+        isDragging = false;
+        char.alpha = 1;
+    });
+
+    // Move
     window.addEventListener('pointermove', (e) => {
         if (isDragging) {
-            char.x = e.clientX;
-            char.y = e.clientY;
-            console.log(`x: ${char.x}, y: ${char.y}`); // Prints coordinates to console
+            // 1. Get Global Mouse Position
+            const globalPos = { x: e.clientX, y: e.clientY };
+
+            // 2. Convert to "World" Position
+            // Since the world is centered and scaled, we need to ask Pixi:
+            // "Where is this mouse click inside the World container?"
+            const localPos = world.toLocal(globalPos);
+
+            // 3. Move Angad
+            char.x = localPos.x;
+            char.y = localPos.y;
         }
     });
-}
-// 4. HANDLE RESIZING
-window.addEventListener('resize', () => {
-    // Resize the renderer
-    app.renderer.resize(window.innerWidth, window.innerHeight);
-    
-    // Re-center the room sprite if the window size changes
-    if (world.children[0]) {
-        world.children[0].x = app.screen.width / 2;
-        world.children[0].y = app.screen.height / 2;
-    }
-});
 
-// Start the setup
+    // Trigger resize immediately
+    resize();
+}
+
+// 3. THE RESIZE FUNCTION
+function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // Center the world
+    world.x = w / 2;
+    world.y = h / 2;
+
+    const originalRoomWidth = 960;  
+    const originalRoomHeight = 720; 
+    
+    const scaleX = w / originalRoomWidth;
+    const scaleY = h / originalRoomHeight;
+    
+    // Fit to screen with 95% margin
+    let finalScale = Math.min(scaleX, scaleY) * 0.95;
+
+    world.scale.set(finalScale);
+}
+
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+
 setup();
