@@ -28,20 +28,20 @@ async function setup() {
     ]);
 
     // --- SETUP ROOM ---
-    const room = new Sprite(textures['/assets/room_base.png']);
+    const room = new Sprite(textures['assets/room_base.png']);
     room.anchor.set(0.5);
     room.zIndex = 0;
     world.addChild(room);
 
     // --- SETUP ANGAD ---
-    const char = new Sprite(textures['/assets/angad_character_temp3.png']);
+    const char = new Sprite(textures['assets/angad_character_temp3.png']);
     char.anchor.set(0.5, 1); 
     char.zIndex = 10;
     char.scale.set(2); 
     world.addChild(char);
 
     // --- SETUP SOFA ---
-    const sofa = new Sprite(textures['/assets/room_base_sofa.png']);
+    const sofa = new Sprite(textures['assets/room_base_sofa.png']);
     sofa.anchor.set(0.5);
     sofa.zIndex = 20;
     world.addChild(sofa);
