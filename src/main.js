@@ -22,9 +22,9 @@ app.stage.addChild(world);
 async function setup() {
     // UPDATED ASSET LIST
     const textures = await Assets.load([
-        '/assets/room_base.png',
-        '/assets/room_base_sofa.png',
-        '/assets/angad_character_temp3.png', 
+        'assets/room_base.png',
+        'assets/room_base_sofa.png',
+        'assets/angad_character_temp3.png', 
     ]);
 
     // --- SETUP ROOM ---
