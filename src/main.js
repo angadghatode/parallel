@@ -1,10 +1,10 @@
-import { Application, Container, Assets, Sprite, TextureStyle } from 'pixi.js';
+import { Application, Container, Assets, Sprite, TextureStyle, Text, TextStyle } from 'pixi.js';
 
 // 1. SETUP APP
 const app = new Application();
 await app.init({
     resizeTo: window,
-    backgroundColor: 0xffd700,
+    backgroundColor: 0xffd700, // Yellow background
     antialias: false,
     resolution: window.devicePixelRatio || 1,
     autoDensity: true,
@@ -19,80 +19,67 @@ const world = new Container();
 world.sortableChildren = true; 
 app.stage.addChild(world);
 
+// 3. DEBUG LOADING TEXT (So you know it's running)
+const style = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 24,
+    fontWeight: 'bold',
+    fill: '#000000', // Black text
+});
+const loadingText = new Text({ text: 'Loading Assets...', style });
+loadingText.x = 20;
+loadingText.y = 20;
+app.stage.addChild(loadingText);
+
 async function setup() {
-    // UPDATED ASSET LIST
-    const textures = await Assets.load([
-        'assets/room_base.png',
-        'assets/room_base_sofa.png',
-        'assets/angad_character_temp3.png', 
-    ]);
+    try {
+        // --- ROBUST LOADER ---
+        // We give them "names" (alias) so path changes don't break the code
+        Assets.add({ alias: 'room', src: 'assets/room_base.png' });
+        Assets.add({ alias: 'sofa', src: 'assets/room_base_sofa.png' });
+        Assets.add({ alias: 'char', src: 'assets/angad_character_temp3.png' });
 
-    // --- SETUP ROOM ---
-    const room = new Sprite(textures['assets/room_base.png']);
-    room.anchor.set(0.5);
-    room.zIndex = 0;
-    world.addChild(room);
+        // Load by name
+        const textures = await Assets.load(['room', 'sofa', 'char']);
+        
+        // Remove loading text
+        app.stage.removeChild(loadingText);
 
-    // --- SETUP ANGAD ---
-    const char = new Sprite(textures['assets/angad_character_temp3.png']);
-    char.anchor.set(0.5, 1); 
-    char.zIndex = 10;
-    char.scale.set(2); 
-    world.addChild(char);
+        // --- SETUP ROOM ---
+        // Now we use the simple name 'room' instead of the path
+        const room = new Sprite(textures.room);
+        room.anchor.set(0.5);
+        room.zIndex = 0;
+        world.addChild(room);
 
-    // --- SETUP SOFA ---
-    const sofa = new Sprite(textures['assets/room_base_sofa.png']);
-    sofa.anchor.set(0.5);
-    sofa.zIndex = 20;
-    world.addChild(sofa);
+        // --- SETUP ANGAD ---
+        const char = new Sprite(textures.char);
+        char.anchor.set(0.5, 1); 
+        char.zIndex = 10;
+        char.scale.set(2); 
+        world.addChild(char);
 
-    // --- RESTORE DRAGGING (SMART VERSION) ---
-    char.eventMode = 'static';
-    char.cursor = 'pointer';
-    
-    let isDragging = false;
+        // --- SETUP SOFA ---
+        const sofa = new Sprite(textures.sofa);
+        sofa.anchor.set(0.5);
+        sofa.zIndex = 20;
+        world.addChild(sofa);
 
-    // Start Dragging
-    char.on('pointerdown', () => {
-        isDragging = true;
-        // Optional: Make him slightly transparent while dragging
-        char.alpha = 0.8; 
-    });
+        // Resize immediately
+        resize();
 
-    // Stop Dragging
-    // We attach this to 'window' so it stops even if you drag off the character
-    window.addEventListener('pointerup', () => {
-        isDragging = false;
-        char.alpha = 1;
-    });
-
-    // Move
-    window.addEventListener('pointermove', (e) => {
-        if (isDragging) {
-            // 1. Get Global Mouse Position
-            const globalPos = { x: e.clientX, y: e.clientY };
-
-            // 2. Convert to "World" Position
-            // Since the world is centered and scaled, we need to ask Pixi:
-            // "Where is this mouse click inside the World container?"
-            const localPos = world.toLocal(globalPos);
-
-            // 3. Move Angad
-            char.x = localPos.x;
-            char.y = localPos.y;
-        }
-    });
-
-    // Trigger resize immediately
-    resize();
+    } catch (e) {
+        // If it fails, print the error on the screen so we can see it
+        loadingText.text = "ERROR:\n" + e.message;
+        console.error(e);
+    }
 }
 
-// 3. THE RESIZE FUNCTION
+// 4. RESIZE FUNCTION
 function resize() {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    // Center the world
     world.x = w / 2;
     world.y = h / 2;
 
@@ -102,9 +89,7 @@ function resize() {
     const scaleX = w / originalRoomWidth;
     const scaleY = h / originalRoomHeight;
     
-    // Fit to screen with 95% margin
     let finalScale = Math.min(scaleX, scaleY) * 0.95;
-
     world.scale.set(finalScale);
 }
 
