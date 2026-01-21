@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/parallel/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MyParallel</title>
+
+    <style>
+        /* NUCLEAR CSS RESET (Embedded to guarantee it works) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0 !important;   /* Force remove margins */
+            padding: 0 !important;  /* Force remove padding */
+            overflow: hidden;       /* Kill scrollbars */
+            background-color: #ffd700; /* Match game background */
+            
+            /* Mobile Locks */
+            position: fixed;
+            top: 0;
+            left: 0;
+            overscroll-behavior: none;
+            touch-action: none;
+        }
+
+        /* Ensure the canvas fills the screen exactly */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            outline: none; /* Removes blue selection outline */
+        }
+    </style>
+
+    <script type="module" crossorigin src="/parallel/assets/index-jJfXiaSS.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
