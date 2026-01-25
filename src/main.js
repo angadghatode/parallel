@@ -24,7 +24,7 @@ import { Application, Container, Assets, Sprite, TextureStyle } from 'pixi.js';
         app.stage.addChild(world);
 
         // 3. DEFINE PATH (Keep this since it works!)
-        const repoPath = '/parallel/'; 
+        const repoPath = '/'; 
 
         // 4. LOAD ASSETS
         const textures = await Assets.load([
