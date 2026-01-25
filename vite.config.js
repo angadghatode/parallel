@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   // REPLACE 'my-parallel' with your exact repository name
-  base: '/parallel/', 
+  base: './', 
   build: {
     outDir: 'dist',
   }

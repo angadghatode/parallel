@@ -1,99 +1,112 @@
-import { Application, Container, Assets, Sprite, TextureStyle, Text, TextStyle } from 'pixi.js';
+import { Application, Container, Assets, Sprite, TextureStyle } from 'pixi.js';
 
-// 1. SETUP APP
-const app = new Application();
-await app.init({
-    resizeTo: window,
-    backgroundColor: 0xffd700, // Yellow background
-    antialias: false,
-    resolution: window.devicePixelRatio || 1,
-    autoDensity: true,
-});
-document.body.appendChild(app.canvas);
-
-// GLOBAL SETTINGS
-TextureStyle.defaultOptions.scaleMode = 'nearest';
-
-// 2. THE WORLD CONTAINER
-const world = new Container();
-world.sortableChildren = true; 
-app.stage.addChild(world);
-
-// 3. DEBUG LOADING TEXT (So you know it's running)
-const style = new TextStyle({
-    fontFamily: 'Arial',
-    fontSize: 24,
-    fontWeight: 'bold',
-    fill: '#000000', // Black text
-});
-const loadingText = new Text({ text: 'Loading Assets...', style });
-loadingText.x = 20;
-loadingText.y = 20;
-app.stage.addChild(loadingText);
-
-async function setup() {
+(async () => {
     try {
-        // --- ROBUST LOADER ---
-        // We give them "names" (alias) so path changes don't break the code
-        Assets.add({ alias: 'room', src: 'assets/room_base.png' });
-        Assets.add({ alias: 'sofa', src: 'assets/room_base_sofa.png' });
-        Assets.add({ alias: 'char', src: 'assets/angad_character_temp3.png' });
-
-        // Load by name
-        const textures = await Assets.load(['room', 'sofa', 'char']);
+        console.log("1. System Starting...");
         
-        // Remove loading text
-        app.stage.removeChild(loadingText);
+        // 1. SETUP APP
+        const app = new Application();
+        await app.init({
+            resizeTo: window,
+            backgroundColor: 0xffd700,
+            antialias: false,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true,
+        });
+        document.body.appendChild(app.canvas);
 
-        // --- SETUP ROOM ---
-        // Now we use the simple name 'room' instead of the path
-        const room = new Sprite(textures.room);
+        // GLOBAL SETTINGS
+        TextureStyle.defaultOptions.scaleMode = 'nearest';
+
+        // 2. WORLD CONTAINER
+        const world = new Container();
+        world.sortableChildren = true; 
+        app.stage.addChild(world);
+
+        // 3. DEFINE PATH (Keep this since it works!)
+        const repoPath = '/parallel/'; 
+
+        // 4. LOAD ASSETS
+        const textures = await Assets.load([
+            repoPath + 'assets/room_base.png',
+            repoPath + 'assets/room_base_sofa.png',
+            repoPath + 'assets/angad_character_temp3.png', 
+        ]);
+
+        console.log("2. Assets Loaded!");
+
+        // 5. CREATE SPRITES
+        // --- ROOM ---
+        const room = new Sprite(textures[repoPath + 'assets/room_base.png']);
         room.anchor.set(0.5);
         room.zIndex = 0;
         world.addChild(room);
 
-        // --- SETUP ANGAD ---
-        const char = new Sprite(textures.char);
+        // --- ANGAD ---
+        const char = new Sprite(textures[repoPath + 'assets/angad_character_temp3.png']);
         char.anchor.set(0.5, 1); 
         char.zIndex = 10;
         char.scale.set(2); 
         world.addChild(char);
 
-        // --- SETUP SOFA ---
-        const sofa = new Sprite(textures.sofa);
+        // --- SOFA ---
+        const sofa = new Sprite(textures[repoPath + 'assets/room_base_sofa.png']);
         sofa.anchor.set(0.5);
         sofa.zIndex = 20;
         world.addChild(sofa);
 
-        // Resize immediately
+        // --- DRAGGING LOGIC (RESTORED) ---
+        char.eventMode = 'static';
+        char.cursor = 'pointer';
+        
+        let isDragging = false;
+
+        // Start Drag
+        char.on('pointerdown', () => {
+            isDragging = true;
+            char.alpha = 0.8; // Visual feedback
+        });
+
+        // End Drag (Listen on window so you don't drop him if you move too fast)
+        window.addEventListener('pointerup', () => {
+            isDragging = false;
+            char.alpha = 1;
+        });
+
+        // Move (The Math Magic)
+        window.addEventListener('pointermove', (e) => {
+            if (isDragging) {
+                // 1. Get raw mouse position
+                const globalPos = { x: e.clientX, y: e.clientY };
+
+                // 2. Convert raw mouse -> World coordinates
+                // This handles the scaling and centering automatically
+                const localPos = world.toLocal(globalPos);
+
+                // 3. Move Angad
+                char.x = localPos.x;
+                char.y = localPos.y;
+            }
+        });
+
+        // 6. RESIZE LOGIC
+        function resize() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            world.x = w / 2;
+            world.y = h / 2;
+            const scale = Math.min(w / 960, h / 720) * 0.95;
+            world.scale.set(scale);
+        }
+        
+        window.addEventListener('resize', resize);
+        window.addEventListener('orientationchange', () => setTimeout(resize, 200));
         resize();
 
-    } catch (e) {
-        // If it fails, print the error on the screen so we can see it
-        loadingText.text = "ERROR:\n" + e.message;
-        console.error(e);
+        console.log("3. System Online!");
+
+    } catch (err) {
+        console.error("CRITICAL ERROR:", err);
+        alert("CRASH: " + err.message);
     }
-}
-
-// 4. RESIZE FUNCTION
-function resize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-
-    world.x = w / 2;
-    world.y = h / 2;
-
-    const originalRoomWidth = 960;  
-    const originalRoomHeight = 720; 
-    
-    const scaleX = w / originalRoomWidth;
-    const scaleY = h / originalRoomHeight;
-    
-    let finalScale = Math.min(scaleX, scaleY) * 0.95;
-    world.scale.set(finalScale);
-}
-
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 200));
-
-setup();
+})();
