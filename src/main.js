@@ -5,9 +5,8 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
         console.log("1. System Starting...");
         
         // --- CONFIGURATION ---
-        const DEBUG_MODE = true; 
+        const DEBUG_MODE = false; // Set to FALSE later to hide the Red Zone and Numbers!
         
-        // 1. SETUP APP
         const app = new Application();
         await app.init({
             resizeTo: window,
@@ -18,173 +17,109 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
         });
         document.body.appendChild(app.canvas);
 
-        // GLOBAL SETTINGS
         TextureStyle.defaultOptions.scaleMode = 'nearest';
 
-        // 2. WORLD CONTAINER
         const world = new Container();
         world.sortableChildren = true; 
         app.stage.addChild(world);
 
         const repoPath = '/'; 
 
-        // 4. LOAD ASSETS
         const textures = await Assets.load([
             repoPath + 'assets/room_base.png',
             repoPath + 'assets/room_base_sofa.png',
             repoPath + 'assets/angad_character_temp3.png', 
+            repoPath + 'assets/room_base_kitchen.png'
         ]);
 
-        console.log("2. Assets Loaded!");
-
-        // 5. CREATE SPRITES
+        // --- SPRITES ---
         const room = new Sprite(textures[repoPath + 'assets/room_base.png']);
         room.anchor.set(0.5);
-        room.zIndex = -1000;
+        room.zIndex = -1000; 
         world.addChild(room);
 
         const sofa = new Sprite(textures[repoPath + 'assets/room_base_sofa.png']);
         sofa.anchor.set(0.5, 0.5); 
         sofa.y = 0; 
+        sofa.zIndex = 50; 
         world.addChild(sofa);
 
         const char = new Sprite(textures[repoPath + 'assets/angad_character_temp3.png']);
-        char.anchor.set(0.5, 0.5); 
+        char.anchor.set(0.5, 1); // Anchor at FEET
         char.scale.set(2); 
-        char.y = 100;
+        char.y = 50;
         world.addChild(char);
 
-        // --- 6. DEFINE CUSTOM SHAPES (POLYGONS) ---
-        // UPDATE THESE NUMBERS using the mouse tracker!
-        const sofaPoints = [
-            -75, 40,  //left corner 
-            45, -30,  //Right Corner
-            130, 10,
-            10, 80,
+        const kitchen = new Sprite(textures[repoPath + 'assets/room_base_kitchen.png']);
+        kitchen.anchor.set(0.5, 0.5); 
+        kitchen.y = 0; 
+        kitchen.x = 0;
+        kitchen.zIndex = 999; 
+        world.addChild(kitchen);
+
+        // --- THE "HIDDEN ZONE" ---
+        // Use the Mouse Tracker to find the perfect numbers for this!
+        const zonePoints = [
+            -160, 85, //left corner 
+            45, -10,  //Right Corner
+            180, 45,  //bottom right
+            -10, 140,   //bottom left 
         ];
 
-        // Create the Hitbox Graphics
-        const obstacles = new Graphics();
-        obstacles.moveTo(sofaPoints[0], sofaPoints[1]);
-        for (let i = 2; i < sofaPoints.length; i += 2) {
-            obstacles.lineTo(sofaPoints[i], sofaPoints[i+1]);
-        }
-        obstacles.closePath();
-        
-        // Visual Styling for Obstacles
-        obstacles.fill({ color: 0xff0000, alpha: DEBUG_MODE ? 0.3 : 0 });
-        obstacles.stroke({ width: 2, color: 0xff0000, alpha: DEBUG_MODE ? 0.8 : 0 });
-        world.addChild(obstacles);
+        const hiddenZone = new Graphics();
+        hiddenZone.poly(zonePoints);
+        hiddenZone.fill({ color: 0xff0000, alpha: DEBUG_MODE ? 0.5 : 0 }); 
+        world.addChild(hiddenZone);
 
-        // --- 7. DEBUG HELPERS (DOT & TEXT) ---
+        // --- MOUSE TRACKER SETUP ---
         let coordText;
-        let debugDot; // The specific dot you asked for!
-
         if (DEBUG_MODE) {
-            // Text Helper
             coordText = new Text({ text: "0, 0", style: { fontSize: 16, fill: 'white', stroke: 'black', strokeThickness: 3 } });
-            coordText.zIndex = 10000;
-            app.stage.addChild(coordText);
-
-            // THE COLLISION DOT
-            debugDot = new Graphics();
-            debugDot.circle(0, 0, 4); // Draw a 4px circle
-            debugDot.fill(0x00ff00);  // Start Green (Safe)
-            debugDot.zIndex = 9999;   // Draw on top of character
-            world.addChild(debugDot); // Add to world so it moves with the room
+            coordText.zIndex = 10000; // Always on top
+            app.stage.addChild(coordText); // Add to screen, not world
         }
 
-        // 8. INPUT HANDLING
-        const keys = {};
-        window.addEventListener('keydown', (e) => keys[e.key] = true);
-        window.addEventListener('keyup', (e) => keys[e.key] = false);
+        // --- DRAGGING LOGIC ---
+        char.eventMode = 'static';
+        char.cursor = 'pointer';
+        let isDragging = false;
 
-        // 9. GAME LOOP
-        app.ticker.add(() => {
-            
-            // --- A. ISOMETRIC MOVEMENT ---
-            let dx = 0;
-            let dy = 0;
-            const speed = 1; // Adjust speed here
-            const isoRatio = 0.5; // Standard 2:1 isometric ratio
+        char.on('pointerdown', () => { isDragging = true; char.alpha = 0.8; });
+        window.addEventListener('pointerup', () => { isDragging = false; char.alpha = 1; });
+        
+        // Combine Dragging + Mouse Tracking in one listener
+        window.addEventListener('pointermove', (e) => {
+            const globalPos = { x: e.clientX, y: e.clientY };
+            const localPos = world.toLocal(globalPos);
 
-            // W = Move towards Top-Left Wall (North-West)
-            if (keys['a'] || keys['A']) {
-                dx -= speed;
-                dy -= speed * isoRatio;
-            }
-            // S = Move towards Bottom-Right Wall (South-East)
-            if (keys['d'] || keys['D']) {
-                dx += speed;
-                dy += speed * isoRatio;
-            }
-            // A = Move towards Bottom-Left Wall (South-West)
-            if (keys['s'] || keys['S']) {
-                dx -= speed;
-                dy += speed * isoRatio;
-            }
-            // D = Move towards Top-Right Wall (North-East)
-            if (keys['w'] || keys['W']) {
-                dx += speed;
-                dy -= speed * isoRatio;
+            // 1. Handle Dragging
+            if (isDragging) {
+                char.x = localPos.x;
+                char.y = localPos.y;
             }
 
-            // Normalization (Optional: Prevents super speed when holding 3 keys)
-            // If we are moving, we normalize to ensure consistent speed
-            if (dx !== 0 || dy !== 0) {
-                 // Simple cap to prevent runaway values if multiple keys are mashed
-                 // (We don't strictly normalize vector length here to keep the "snappy" grid feel, 
-                 // but you can add Math.sqrt logic here if you want perfect circle movement)
-            }
-
-            // --- B. INDEPENDENT COLLISION CHECKS (Sliding) ---
-            
-            // 1. Check X Movement
-            const nextX = char.x + dx;
-            const pointX = new Point(nextX, char.y); 
-            if (!obstacles.containsPoint(pointX)) {
-                char.x = nextX; // Safe to move X
-            }
-
-            // 2. Check Y Movement
-            const nextY = char.y + dy;
-            const pointY = new Point(char.x, nextY); 
-            if (!obstacles.containsPoint(pointY)) {
-                char.y = nextY; // Safe to move Y
-            }
-
-            // --- DEBUG DOT ---
-            if (DEBUG_MODE) {
-                const isBlocked = obstacles.containsPoint(new Point(char.x + dx, char.y + dy));
-                debugDot.tint = isBlocked ? 0xff0000 : 0x00ff00;
-                debugDot.x = char.x;
-                debugDot.y = char.y;
-            }
-
-            // --- C. Y-SORTING ---
-            const charSortY = char.y + -10; 
-            char.zIndex = charSortY;
-
-            // 2. Sofa Sort Point
-            // We want the "sorting line" to be at the very bottddaom of the sofa's feet.
-            // If the anchor is 0.5, we need to add half the sofa's height.
-            // TWEAK THIS NUMBER until it looks perfect!
-            const sofaOffset = 10; 
-            sofa.zIndex = sofa.y + sofaOffset;
-        });
-
-        // 10. MOUSE TRACKER EVENT
-        if (DEBUG_MODE) {
-            window.addEventListener('pointermove', (e) => {
-                const globalPos = { x: e.clientX, y: e.clientY };
-                const localPos = world.toLocal(globalPos);
-
+            // 2. Handle Mouse Tracker
+            if (DEBUG_MODE && coordText) {
+                // Update text
                 coordText.text = `x: ${Math.round(localPos.x)}, y: ${Math.round(localPos.y)}`;
+                // Move text to follow mouse
                 coordText.x = e.clientX + 15;
                 coordText.y = e.clientY + 15;
-            });
-        }
+            }
+        });
 
+        // --- THE SORTING LOGIC ---
+        app.ticker.add(() => {
+            const feetPos = new Point(char.x, char.y);
+
+            if (hiddenZone.containsPoint(feetPos)) {
+                char.zIndex = 10; // Behind
+            } else {
+                char.zIndex = 100; // Front
+            }
+        });
+
+        // --- RESIZE ---
         function resize() {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -193,14 +128,11 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
             const scale = Math.min(w / 960, h / 720) * 0.95;
             world.scale.set(scale);
         }
-        
         window.addEventListener('resize', resize);
         resize();
 
-        console.log("3. System Online!");
-
     } catch (err) {
-        console.error("CRITICAL ERROR:", err);
-        alert("CRASH: " + err.message);
+        console.error(err);
+        alert(err.message);
     }
 })();
