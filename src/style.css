@@ -1,32 +1,349 @@
+:root {
+    /* UI Palette */
+    --ui-box: #27262A;
+    --ui-border: #CCC8C0;
+    --ui-text-primary: #F3E2B4;
+    --ui-text-secondary: #A09B9A;
+
+    /* Night Sky Colors */
+    --sky-top: #0B0B1A; 
+    --sky-bottom: #2D263C; 
+}
+
+@font-face {
+    font-family: 'PixelFont1'; /* You can name this whatever you want */
+    src: url('/fonts/crang/Crang.ttf') format('truetype'); 
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'PixelFont2'; /* You can name this whatever you want */
+    src: url('/fonts/pearsoda/PearSoda.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'PixelFont3'; /* You can name this whatever you want */
+    src: url('/fonts/qaaxee/Qaaxee.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'PixelFont3', sans-serif;
+    
+    /* The "Banded" Pixel Fade (Stepped Gradient) */
+    background: linear-gradient(
+        to bottom,
+        var(--sky-top) 0%, var(--sky-top) 25%,
+        #1c142c 25%, #1c142c 50%,
+        #251d36 50%, #251d36 75%,
+        var(--sky-bottom) 75%, var(--sky-bottom) 100%
+    );
+    
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    position: relative; 
+}
+
+/* The 8-Bit Dither Overlay */
+body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2; 
+    background-image: repeating-conic-gradient(transparent 0 25%, rgba(0,0,0,0.2) 0 50%);
+    background-size: 4px 4px; 
+    pointer-events: none;
+}
+
+/* Background Stars */
+.star {
+    position: absolute;
+    z-index: 1; 
+    animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* --- Layout Containers --- */
+#app-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#pixi-container {
+    position: absolute;
+    inset: 0;
+    z-index: 5; 
+}
+
+#ui-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10; 
+    pointer-events: none;
+    padding: 4vmin; 
+}
+
+/* Global resets for UI */
 * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    box-shadow: none !important;
+}
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            margin: 0 !important;   /* Force remove margins */
-            padding: 0 !important;  /* Force remove padding */
-            overflow: hidden;       /* Kill scrollbars */
-            background-color: #ffd700; /* Match game background */
-            
-            /* Mobile Locks */
-            position: fixed;
-            top: 0;
-            left: 0;
-            overscroll-behavior: none;
-            touch-action: none;
-        }
+button, input, #task-input-container, #speech-bubble {
+    pointer-events: auto; 
+}
 
-        /* Ensure the canvas fills the screen exactly */
-        canvas {
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            outline: none; /* Removes blue selection outline */
-        }
+/* --- Specific UI Elements --- */
+#title, .time {
+    font-family: 'PixelFont3', sans-serif;
+    text-shadow: 4px 4px 0px var(--ui-box); 
+}
+
+#title {
+    position: absolute;
+    top: 4vmin;
+    left: 4vmin;
+    font-size: 6vmin; 
+    color: var(--ui-text-primary);
+    margin: 0;
+}
+
+#live-clock {
+    position: absolute;
+    top: 11vmin; 
+    left: 4vmin;
+    font-family: 'PixelFont3', sans-serif;
+    font-size: 2.5vmin;
+    color: var(--ui-text-secondary); 
+    text-shadow: 2px 2px 0px var(--ui-box);
+}
+
+#controls {
+    position: absolute;
+    top: 4vmin;
+    right: 4vmin;
+    display: flex;
+    gap: 1.5vmin; /* Slightly more gap */
+}
+
+#controls button {
+    font-family: 'PixelFont3', sans-serif; /* Use the chunky font! */
+    font-size: 3vmin; /* Make the text bigger */
+    background: var(--ui-box);
+    color: var(--ui-text-primary);
+    border: 4px solid var(--ui-border);
+    cursor: pointer;
+    padding: 0.5vmin 1.5vmin; /* Tighter padding makes it a block */
+    transition: transform 0.1s;
+}
+
+#controls button:active {
+    transform: translateY(4px);
+}
+
+button {
+    font-family: inherit;
+    background: var(--ui-box);
+    color: var(--ui-text-primary);
+    border: 4px solid var(--ui-border);
+    cursor: pointer;
+    padding: 1vmin 2vmin;
+    font-size: 2.5vmin; 
+    transition: transform 0.1s;
+}
+
+button:active {
+    transform: translateY(4px);
+}
+
+#timer-box {
+    position: absolute;
+    bottom: 4vmin;
+    right: 4vmin;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; 
+    color: var(--ui-text-primary);
+}
+
+.time {
+    font-size: 10vmin; 
+    line-height: 0.8;
+}
+
+#task-input-container {
+    display: flex;
+    gap: 1vmin;
+    align-items: center;
+    margin-top: 1vmin;
+}
+
+#task-input {
+    font-family: inherit;
+    background: transparent; 
+    border: none;
+    color: var(--ui-text-secondary);
+    font-size: 2.5vmin;
+    text-transform: uppercase;
+    text-align: right; 
+    width: 25vmin;
+    outline: none;
+    padding: 0.5vmin;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+#task-input:focus {
+    color: var(--ui-text-primary);
+}
+
+#task-input::placeholder {
+    color: var(--ui-text-secondary);
+    opacity: 0.6;
+}
+
+#start-btn {
+    font-size: 2vmin;
+    padding: 0.5vmin 1vmin;
+    background: var(--ui-box);
+    color: var(--ui-text-primary);
+    border: 3px solid var(--ui-box); 
+}
+
+/* --- UPDATED RPG SPEECH BUBBLE & PORTRAIT STYLING --- */
+
+/* Ensures everything is perfectly blocky and non-aliased */
+* {
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+}
+
+#speech-bubble {
+    position: absolute;
+    bottom: 6vmin; /* Lifted up for the tail */
+    left: 4vmin;
+    z-index: 100;
+    pointer-events: auto;
+    
+    background: white;
+    color: var(--ui-box); /* Using the dark charcoal color from your palette */
+    
+    /* Clean, rounded vector bubble look */
+    border: 2px solid var(--ui-box);
+    border-radius: 20px;
+    padding: 2vmin;
+    max-width: 40vmin;
+    
+    /* Internal layout: Portrait next to text */
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5vmin;
+    
+    /* Transition for showing/hiding */
+    transition: opacity 0.5s, transform 0.3s;
+    transform: translateY(0);
+}
+/* Constructing the RPG tail of the bubble in CSS */
+#speech-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -10px; /* Pull it below the box */
+    left: 5vmin; /* Positioned to match the tail in the reference */
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10px 10px 0 0; /* Creates the slanted triangle shape */
+    border-color: var(--ui-box) transparent transparent transparent; /* Dark outline */
+    z-index: 1; /* Sits behind the fill */
+}
+#speech-bubble::before {
+    content: "";
+    position: absolute;
+    bottom: -6px; /* Sits slightly inside the outer outline */
+    left: calc(5vmin + 1.5px);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 8px 8px 0 0;
+    border-color: white transparent transparent transparent; /* White fill */
+    z-index: 2; /* Sits above the outline pseudo-element */
+}
+
+/* Hide class controlled by JS */
+#speech-bubble.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+}
+
+/* The Portrait in the corner */
+#bubble-portrait {
+    width: 8vmin;
+    height: 8vmin;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 0.5vmin; /* Minor alignment adjustment */
+}
+
+/* Container for the typewriter text */
+.text-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#bubble-title {
+    font-family: 'PixelFont3', sans-serif; /* A standard, clear font for titles */
+    font-size: 2.5vmin; /* Increased from 1.8 */
+    font-weight: bold;
+    color: var(--ui-box);
+    margin-bottom: 0.5vmin;
+}
+
+#bubble-text {
+    font-family: 'PixelFont3';
+    font-size: 1.9vmin; /* Increased from 1.6 */
+    line-height: 1.4;
+    font-weight: normal;
+    margin: 0;
+    color: #444; 
+    
+    /* THE MAGIC FIX FOR THE MISSING SPACES */
+    white-space: pre-wrap;
+}
+
+/* --- WEATHER SYSTEM --- */
+#weather-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 6; /* Sits in front of the room, behind the UI */
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 2s ease-in-out; /* Smooth fade when the storm starts/stops */
+}
+
+.raindrop {
+    position: absolute;
+    background: #8FA9D4; /* Solid, moody pixel blue - NO transparency! */
+    width: 5px; /* Chunky pixel width */
+    height: 20px; /* Short, blocky length instead of long streaks */
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    /* Adding a slightly sharper angle to match the isometric vibe */
+    0% { transform: translate(0, -20vh); }
+    100% { transform: translate(-25vw, 110vh); } 
+}
