@@ -5,6 +5,7 @@
     <link rel="icon" href="/assets/favicon-8F4fWXP3.png" /> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MyParallel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" rel="stylesheet">
 
     <style>
         /* NUCLEAR CSS RESET (Embedded to guarantee it works) */
@@ -20,7 +21,7 @@
             margin: 0 !important;   /* Force remove margins */
             padding: 0 !important;  /* Force remove padding */
             overflow: hidden;       /* Kill scrollbars */
-            background-color: #ffd700; /* Match game background */
+            background-color: #0d2f6d; /* Match game background */
             
             /* Mobile Locks */
             position: fixed;
@@ -42,9 +43,58 @@
         }
     </style>
 
-    <script type="module" crossorigin src="/assets/index-DvH3aMHD.js"></script>
+    <script type="module" crossorigin src="/assets/index-Dk7Wrsuu.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-clbdtVHV.css">
   </head>
+
   <body>
-    <div id="app"></div>
-  </body>
+  <div id="app-container">
+    
+    <div class="star" style="top: 15%; left: 10%; width: 4px; height: 4px; background: white;"></div>
+    <div class="star" style="top: 25%; left: 85%; width: 6px; height: 6px; background: var(--ui-text-primary);"></div>
+    <div class="star" style="top: 65%; left: 12%; width: 8px; height: 8px; background: white;"></div>
+    <div class="star" style="top: 55%; left: 88%; width: 4px; height: 4px; background: var(--ui-text-primary);"></div>
+    <div class="star" style="top: 85%; left: 35%; width: 6px; height: 6px; background: white;"></div>
+    <div class="star" style="top: 10%; left: 60%; width: 4px; height: 4px; background: white;"></div>
+    <div class="star" style="top: 40%; left: 5%; width: 6px; height: 6px; background: var(--ui-text-primary);"></div>
+    <div class="star" style="top: 80%; left: 80%; width: 4px; height: 4px; background: white;"></div>
+    <div class="star" style="top: 20%; left: 30%; width: 8px; height: 8px; background: var(--ui-text-primary);"></div>
+
+    <div id="pixi-container"></div>
+
+    <div id="weather-layer"></div>
+
+    <div id="ui-overlay">
+      
+      <div id="title">ANGAD'S ROOM</div>
+      <div id="live-clock">Loading time...</div>
+      <!-- 
+      <div id="controls">
+        <button>[ SND ]</button>
+        <button>[ LGT ]</button>
+        <button>[ USR ]</button>
+      </div>
+      -->
+
+      <div id="timer-box">
+        <div class="time" id="timer-display">25:00</div>
+        <div id="task-input-container">
+          <input type="text" id="task-input" placeholder="CLICK TO SET TASK..." />
+          <button id="start-btn">▶️</button>
+        </div>
+      </div>
+
+      <div id="speech-bubble" class="hidden">
+  
+        <img id="bubble-portrait" src="/assets/portrait.webp" alt="Character Portrait" />
+        
+        <div class="text-container">
+          <div id="bubble-title">ANGAD</div> <p id="bubble-text"></p> </div>
+
+      </div>
+
+    </div>
+  </div>
+  
+</body>
 </html>
