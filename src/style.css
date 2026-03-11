@@ -5,8 +5,10 @@
     --ui-text-primary: #F3E2B4;
     --ui-text-secondary: #A09B9A;
 
-    /* Night Sky Colors */
+    /* Default Night Sky Colors (overridden by JS) */
     --sky-top: #0B0B1A; 
+    --sky-mid1: #1c142c;
+    --sky-mid2: #251d36;
     --sky-bottom: #2D263C; 
 }
 
@@ -39,21 +41,22 @@ body, html {
     overflow: hidden;
     font-family: 'PixelFont3', sans-serif;
     
-    /* The "Banded" Pixel Fade (Stepped Gradient) */
+    /* Dynamic Stepped Gradient */
     background: linear-gradient(
         to bottom,
         var(--sky-top) 0%, var(--sky-top) 25%,
-        #1c142c 25%, #1c142c 50%,
-        #251d36 50%, #251d36 75%,
+        var(--sky-mid1) 25%, var(--sky-mid1) 50%,
+        var(--sky-mid2) 50%, var(--sky-mid2) 75%,
         var(--sky-bottom) 75%, var(--sky-bottom) 100%
     );
     
     -webkit-font-smoothing: none;
     font-smooth: never;
     position: relative; 
+    transition: background 2s ease; /* Smooth crossfades! */
 }
 
-/* The 8-Bit Dither Overlay */
+/* The 8-Bit Dither Overlay 
 body::after {
     content: "";
     position: absolute;
@@ -62,13 +65,14 @@ body::after {
     background-image: repeating-conic-gradient(transparent 0 25%, rgba(0,0,0,0.2) 0 50%);
     background-size: 4px 4px; 
     pointer-events: none;
-}
+}*/
 
 /* Background Stars */
 .star {
     position: absolute;
     z-index: 1; 
     animation: spin 4s linear infinite;
+    transition: none !important;
 }
 
 @keyframes spin {
@@ -126,6 +130,16 @@ button, input, #task-input-container, #speech-bubble {
     left: 4vmin;
     font-family: 'PixelFont3', sans-serif;
     font-size: 2.5vmin;
+    color: var(--ui-text-secondary); 
+    text-shadow: 2px 2px 0px var(--ui-box);
+}
+
+#live-weather-text {
+    position: absolute;
+    top: 15vmin; 
+    left: 4vmin;
+    font-family: 'PixelFont3', sans-serif;
+    font-size: 1.5vmin;
     color: var(--ui-text-secondary); 
     text-shadow: 2px 2px 0px var(--ui-box);
 }
@@ -194,7 +208,7 @@ button:active {
     font-family: inherit;
     background: transparent; 
     border: none;
-    color: var(--ui-text-secondary);
+    color: var(--ui-text-primary);
     font-size: 2.5vmin;
     text-transform: uppercase;
     text-align: right; 
@@ -209,16 +223,30 @@ button:active {
 }
 
 #task-input::placeholder {
-    color: var(--ui-text-secondary);
+    color: var(--ui-text-primary);
     opacity: 0.6;
 }
 
 #start-btn {
-    font-size: 2vmin;
-    padding: 0.5vmin 1vmin;
-    background: var(--ui-box);
-    color: var(--ui-text-primary);
-    border: 3px solid var(--ui-box); 
+    /* 1. Remove all default browser styles */
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    
+    /* 2. Apply your custom image */
+    background-image: url('/assets/button.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    
+    /* 3. Set the size (adjust these numbers to fit your specific pixel art!) */
+    width: 5vmin; 
+    height: 5vmin;
+    /* 4. Make it feel interactive */
+    cursor: pointer;
+    image-rendering: pixelated; /* Keeps the pixel art crunchy */
+    transition: transform 0.1s ease;
 }
 
 /* --- UPDATED RPG SPEECH BUBBLE & PORTRAIT STYLING --- */
@@ -324,14 +352,10 @@ button:active {
 }
 
 /* --- WEATHER SYSTEM --- */
+/* style.css */
 #weather-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 6; /* Sits in front of the room, behind the UI */
-    pointer-events: none;
-    overflow: hidden;
-    opacity: 0; /* Hidden by default */
-    transition: opacity 2s ease-in-out; /* Smooth fade when the storm starts/stops */
+    background-color: rgba(0, 0, 15, 0.45); /* Darkens the screen when opacity goes to 1 */
+    transition: opacity 2s ease;
 }
 
 .raindrop {
@@ -346,4 +370,103 @@ button:active {
     /* Adding a slightly sharper angle to match the isometric vibe */
     0% { transform: translate(0, -20vh); }
     100% { transform: translate(-25vw, 110vh); } 
+}
+
+/* --- TIME OF DAY SKY THEMES --- */
+body.time-day {
+    --sky-top: #4A90E2;
+    --sky-mid1: #5CA0EA;
+    --sky-mid2: #6EB0F2;
+    --sky-bottom: #87CEEB;
+}
+
+/* Sunset: Orange/Pink sky */
+body.time-sunset {
+    --sky-top: #2B2D42;
+    --sky-mid1: #7A444A;
+    --sky-mid2: #B85B50;
+    --sky-bottom: #FF7B54;
+}
+
+/* Night: Dark purple space */
+body.time-night {
+    --sky-top: #0B0B1A;
+    --sky-mid1: #1c142c;
+    --sky-mid2: #251d36;
+    --sky-bottom: #2D263C;
+}
+
+/* Hide the stars during the day and sunset */
+body.time-day,
+body.time-sunset {
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+
+body.time-night{
+    opacity: 1;
+    transition: opacity 2s ease;
+}
+
+/* --- DYNAMIC SUN & CLOUDS --- */
+#weather-sun, #weather-moon {
+    position: absolute;
+    width: 15vmin; 
+    height: auto;
+    z-index: 2; /* Still sits behind the room sprite floor */
+    pointer-events: none; 
+    transform: translate(-50%, -50%); /* Centers image on mouse */
+    image-rendering: pixelated; 
+    
+}
+
+#weather-moon {
+    width: 19vmin; 
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+}
+
+#weather-sun:hover {
+    filter: drop-shadow(0 0 25px rgba(243, 226, 180, 0.8));
+}
+
+#weather-sun {
+    filter: drop-shadow(0 0 15px rgba(243, 226, 180, 0.5));
+}
+
+.star {
+    transition: none !important; 
+}
+
+#weather-sun:active {
+    cursor: grabbing;
+}
+
+@keyframes spin-slow {
+    100% { transform: rotate(360deg); }
+}
+
+#weather-clouds {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease;
+    overflow: hidden; 
+}
+
+.cloud-wrapper {
+    position: absolute;
+    animation: drift linear infinite;
+    will-change: transform; 
+}
+
+.cloud-img {
+    height: auto;
+    image-rendering: pixelated; 
+}
+
+@keyframes drift {
+    0% { transform: translateX(-30vw); }
+    100% { transform: translateX(120vw); }
 }
