@@ -354,7 +354,19 @@ button:active {
 /* --- WEATHER SYSTEM --- */
 /* style.css */
 #weather-layer {
-    background-color: rgba(0, 0, 15, 0.45); /* Darkens the screen when opacity goes to 1 */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999; 
+    pointer-events: none;
+    overflow: hidden;
+    
+    /* ADD THIS LINE: Start hidden by default */
+    opacity: 0; 
+    
+    background-color: rgba(0, 0, 15, 0.45); 
     transition: opacity 2s ease;
 }
 
@@ -453,6 +465,9 @@ body.time-night{
     opacity: 0;
     transition: opacity 2s ease;
     overflow: hidden; 
+
+    opacity: 0; /* Forces clouds invisible on load */
+    transition: opacity 2s ease;
 }
 
 .cloud-wrapper {

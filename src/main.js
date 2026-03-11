@@ -1,4 +1,4 @@
-import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, Text } from 'pixi.js';
+import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, Text, AnimatedSprite, Rectangle, Texture } from 'pixi.js';
 
 (async () => {
     try {
@@ -14,6 +14,7 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
             antialias: false,
             resolution: window.devicePixelRatio || 1,
             autoDensity: true,
+            roundPixels: true
         });
         document.getElementById('pixi-container').appendChild(app.canvas);
 
@@ -25,12 +26,28 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
 
         const repoPath = '/'; 
 
-        const textures = await Assets.load([
+        // 1. Define ONLY the 4 isometric directions
+        const directions = ['north_east', 'south_east', 'south_west', 'north_west'];
+        
+        // 2. Build the array of asset paths to load
+        const assetPaths = [
             repoPath + 'assets/room_base.png',
             repoPath + 'assets/room_base_sofa.png',
-            repoPath + 'assets/angad_character_temp3.png', 
-            repoPath + 'assets/room_base_kitchen.png'
-        ]);
+            repoPath + 'assets/room_base_kitchen.png',
+            repoPath + 'assets/animations/Computer_turn_on.png',
+            repoPath + 'assets/animations/Computer_TYPING.png',
+            repoPath + 'assets/animations/TV_GAME_TURN_ON.png',
+            repoPath + 'assets/animations/TV_GAME.png',
+            repoPath + 'assets/animations/bathtub_drip.png'
+        ];
+        directions.forEach(dir => assetPaths.push(`${repoPath}assets/animations/angad_character_${dir}.png`));
+
+        // 3. Load everything at once
+        const textures = await Assets.load(assetPaths);
+
+        console.log(textures);
+
+        
 
         // --- SPRITES ---
         const room = new Sprite(textures[repoPath + 'assets/room_base.png']);
@@ -44,18 +61,119 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
         sofa.zIndex = 50; 
         world.addChild(sofa);
 
-        const char = new Sprite(textures[repoPath + 'assets/angad_character_temp3.png']);
-        char.anchor.set(0.5, 1); 
-        char.scale.set(2); 
-        char.y = 50;
-        world.addChild(char);
-
         const kitchen = new Sprite(textures[repoPath + 'assets/room_base_kitchen.png']);
         kitchen.anchor.set(0.5, 0.5); 
         kitchen.y = 0; 
         kitchen.x = 0;
-        kitchen.zIndex = 999; 
+        kitchen.zIndex = 998; 
         world.addChild(kitchen);
+
+        // --- HELPER: FUZZY TEXTURE FINDER ---
+        // This completely bypasses server pathing issues!
+        function getTex(filename) {
+            const key = Object.keys(textures).find(k => k.includes(filename));
+            if (!key) console.error(`🚨 Missing texture: ${filename}. Check spelling!`);
+            return textures[key];
+        }
+
+        // --- HELPER: SLICE HORIZONTAL SPRITE SHEETS ---
+        function createFrames(baseTexture, numFrames) {
+            if (!baseTexture) return []; // Prevents the game from crashing if a file is missing!
+            const frameWidth = baseTexture.width / numFrames; 
+            const frameHeight = baseTexture.height;
+            const frames = [];
+            for (let i = 0; i < numFrames; i++) {
+                const rect = new Rectangle(i * frameWidth, 0, frameWidth, frameHeight);
+                frames.push(new Texture({ source: baseTexture.source, frame: rect }));
+            }
+            return frames;
+        }
+
+        // --- PROP: THE COMPUTER ---
+        const compStartupFrames = createFrames(getTex('Computer_turn_on.png'), 7);
+        const compTypingFrames = createFrames(getTex('Computer_TYPING.png'), 12);
+
+        if (compStartupFrames.length > 0) {
+            const computer = new AnimatedSprite(compStartupFrames);
+            computer.anchor.set(0.5); 
+            computer.zIndex = 55; 
+            computer.animationSpeed = 0.1;
+            computer.visible = false;
+            computer.loop = false; 
+            world.addChild(computer);
+
+            computer.onComplete = () => {
+                computer.textures = compTypingFrames;
+                computer.loop = true; 
+                computer.play();
+            };
+        }
+
+        // --- PROP: THE TV ---
+        const tvStartupFrames = createFrames(getTex('TV_GAME_TURN_ON.png'), 5);
+        const tvGameFrames = createFrames(getTex('TV_GAME.png'), 7);
+
+        if (tvStartupFrames.length > 0) {
+            const tv = new AnimatedSprite(tvStartupFrames);
+            tv.anchor.set(0.5); 
+            tv.zIndex = 55; 
+            tv.animationSpeed = 0.1;
+            tv.visible = false;
+            tv.loop = false; 
+            world.addChild(tv);
+
+            tv.onComplete = () => {
+                tv.textures = tvGameFrames;
+                tv.loop = true; 
+                tv.play();
+            };
+        }
+
+        // --- PROP: THE LEAKY TAP ---
+        const tapFrames = createFrames(getTex('bathtub_drip.png'), 7);
+        
+        if (tapFrames.length > 0) {
+            const leakyTap = new AnimatedSprite(tapFrames);
+            leakyTap.anchor.set(0.5); 
+            leakyTap.zIndex = 999;
+            leakyTap.animationSpeed = 0.15;
+            leakyTap.loop = false; 
+            leakyTap.visible = false; 
+            world.addChild(leakyTap);
+
+            setInterval(() => {
+                leakyTap.visible = true;
+                leakyTap.gotoAndPlay(0);
+            }, 8000);
+
+            leakyTap.onComplete = () => {
+                leakyTap.visible = false;
+            };
+        }
+
+        // --- SLICE ANIMATIONS ---
+        const animations = {};
+        directions.forEach(dir => {
+            const baseTexture = textures[`${repoPath}assets/animations/angad_character_${dir}.png`];
+            const frameWidth = baseTexture.width / 4; 
+            const frameHeight = baseTexture.height;
+            const frames = [];
+
+            for (let i = 0; i < 4; i++) {
+                const rect = new Rectangle(i * frameWidth, 0, frameWidth, frameHeight);
+                frames.push(new Texture({ source: baseTexture.source, frame: rect }));
+            }
+            animations[dir] = frames;
+        });
+
+        // --- CREATE CHARACTER ---
+        const char = new AnimatedSprite(animations['south_east']);
+        char.anchor.set(0.5, 1); 
+        char.scale.set(2); 
+        char.y = 50;
+        char.animationSpeed = 0.1; 
+        char.stop(); 
+        world.addChild(char);
 
         // --- THE "HIDDEN ZONE" ---
         const zonePoints = [
@@ -71,41 +189,71 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
         world.addChild(hiddenZone);
 
         // --- MOUSE TRACKER SETUP ---
-        let coordText;
-        if (DEBUG_MODE) {
-            coordText = new Text({ text: "0, 0", style: { fontSize: 16, fill: 'white', stroke: 'black', strokeThickness: 3 } });
-            coordText.zIndex = 10000; 
-            app.stage.addChild(coordText); 
-        }
+        const coordText = new Text({ text: "0, 0", style: { fontSize: 16, fill: 'white', stroke: 'black', strokeThickness: 3 } });
+        coordText.zIndex = 10000; 
+        app.stage.addChild(coordText); 
 
-        // --- CHARACTER DRAGGING LOGIC ---
-        char.eventMode = 'static';
-        char.cursor = 'pointer';
-        let isDragging = false;
-
-        char.on('pointerdown', () => { isDragging = true; char.alpha = 0.8; });
-        window.addEventListener('pointerup', () => { isDragging = false; char.alpha = 1; });
-        
         window.addEventListener('pointermove', (e) => {
-            const globalPos = { x: e.clientX, y: e.clientY };
-            const localPos = world.toLocal(globalPos);
-
-            if (isDragging) {
-                char.x = localPos.x;
-                char.y = localPos.y;
-            }
-
-            if (DEBUG_MODE && coordText) {
-                coordText.text = `x: ${Math.round(localPos.x)}, y: ${Math.round(localPos.y)}`;
-                coordText.x = e.clientX + 15;
-                coordText.y = e.clientY + 15;
-            }
+            const localPos = world.toLocal({ x: e.clientX, y: e.clientY });
+            coordText.text = `x: ${Math.round(localPos.x)}, y: ${Math.round(localPos.y)}`;
+            coordText.x = e.clientX + 15;
+            coordText.y = e.clientY + 15;
         });
 
-        // --- THE SORTING LOGIC ---
+        // --- CHARACTER MOVEMENT ENGINE (PREPPED FOR WAYPOINTS) ---
+        let targetX = char.x;
+        let targetY = char.y;
+        const moveSpeed = 0.4; 
+        let isMoving = false;
+
+        room.eventMode = 'static';
+        room.cursor = 'pointer';
+        
+        room.on('pointerdown', (e) => {
+            const localPos = world.toLocal(e.global);
+            targetX = localPos.x;
+            targetY = localPos.y;
+            isMoving = true;
+        });
+
+        // --- THE SORTING & MOVEMENT LOGIC ---
         app.ticker.add(() => {
             const feetPos = new Point(char.x, char.y);
             char.zIndex = hiddenZone.containsPoint(feetPos) ? 10 : 100; 
+
+            if (!isMoving) return;
+
+            const dx = targetX - char.x;
+            const dy = targetY - char.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > moveSpeed) {
+                const angle = Math.atan2(dy, dx);
+                char.x += Math.cos(angle) * moveSpeed;
+                char.y += Math.sin(angle) * moveSpeed;
+
+                // 4-Directional Logic
+                let degrees = angle * (180 / Math.PI);
+                if (degrees < 0) degrees += 360;
+
+                let newDir = 'south_east'; 
+                if (degrees >= 0 && degrees < 90) newDir = 'south_east';
+                else if (degrees >= 90 && degrees < 180) newDir = 'south_west';
+                else if (degrees >= 180 && degrees < 270) newDir = 'north_west';
+                else if (degrees >= 270 && degrees < 360) newDir = 'north_east';
+
+                if (char.textures !== animations[newDir]) {
+                    char.textures = animations[newDir];
+                    char.play();
+                }
+                if (!char.playing) char.play();
+
+            } else {
+                char.x = targetX;
+                char.y = targetY;
+                isMoving = false;
+                char.gotoAndStop(0); 
+            }
         });
 
         // --- 1. HEX COLOR BLENDER ---
@@ -127,30 +275,22 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
         const moonElement = document.getElementById('weather-moon');
 
         function renderEnvironment(progress) {
-            // progress: 0.0 -> 1.0
-            
             let roomTint, skyTop, skyMid1, skyMid2, skyBottom, starOpacity;
             let sunX = 0, sunY = 0, sunOpacity = 0;
             let moonX = 0, moonY = 0, moonOpacity = 0;
             
             const screenW = window.innerWidth;
 
-            // Defines the top of the arc and the bottom of the arc (the horizon)
-            const Y_PEAK = window.innerHeight * 0.05;    // Highest point (5% from top)
-            const Y_HORIZON = window.innerHeight * 0.25; // Horizon line (25% from top)
-            const Y_HIDDEN = window.innerHeight * 1.5;   // Way off screen when hidden
+            const Y_PEAK = window.innerHeight * 0.05;    
+            const Y_HORIZON = window.innerHeight * 0.25; 
+            const Y_HIDDEN = window.innerHeight * 1.5;   
 
-            // -- PREDETERMINED SKY GRADIENTS --
             const gradientDay = { top: 0x4A90E2, m1: 0x5CA0EA, m2: 0x6EB0F2, b: 0x87CEEB };
             const gradientDusk = { top: 0x2B2D42, m1: 0x7A444A, m2: 0xB85B50, b: 0xFF7B54 };
             const gradientNight = { top: 0x0B0B1A, m1: 0x1c142c, m2: 0x251d36, b: 0x2D263C };
 
-            // -- DEFINE THE COMPLEX TIMELINE PHASES (0.0 - 1.0) --
-            
             if (progress < 0.15) {
-                // PHASE 1: MIDNIGHT TO MOONSET (0.0 to 0.15)
                 const p = progress / 0.15;
-                
                 skyTop=gradientNight.top; skyMid1=gradientNight.m1; skyMid2=gradientNight.m2; skyBottom=gradientNight.b;
                 roomTint = 0x5a5a8f; starOpacity = 1.0;
 
@@ -160,9 +300,7 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
                 sunY = Y_HIDDEN;
             } 
             else if (progress < 0.25) {
-                // PHASE 2: TWILIGHT DAWN (0.15 to 0.25)
                 const p = (progress - 0.15) / 0.10;
-                
                 roomTint = lerpColor(0x5a5a8f, 0xffcc88, p); 
                 skyTop = lerpColor(gradientNight.top, gradientDusk.top, p);
                 skyMid1 = lerpColor(gradientNight.m1, gradientDusk.m1, p);
@@ -174,7 +312,6 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
                 sunY = Y_HIDDEN; 
             } 
             else if (progress < 0.75) {
-                // PHASE 3, 4, 5: SUN RISING, DAY, SUN SETTING (0.25 to 0.75)
                 const pSun = (progress - 0.25) / 0.50; 
                 
                 if (progress < 0.35) { 
@@ -203,9 +340,7 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
                 moonY = Y_HIDDEN;
             } 
             else if (progress < 0.85) {
-                // PHASE 6: TWILIGHT DUSK (0.75 to 0.85)
                 const p = (progress - 0.75) / 0.10;
-                
                 roomTint = lerpColor(0xffcc88, 0x5a5a8f, p); 
                 skyTop = lerpColor(gradientDusk.top, gradientNight.top, p);
                 skyMid1 = lerpColor(gradientDusk.m1, gradientNight.m1, p);
@@ -217,9 +352,7 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
                 sunY = Y_HIDDEN; 
             } 
             else {
-                // PHASE 7: MOONRISE TO MIDNIGHT (0.85 to 1.0)
                 const p = (progress - 0.85) / 0.15;
-                
                 skyTop=gradientNight.top; skyMid1=gradientNight.m1; skyMid2=gradientNight.m2; skyBottom=gradientNight.b;
                 roomTint = 0x5a5a8f; starOpacity = 1.0;
 
@@ -229,7 +362,6 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
                 sunY = Y_HIDDEN;
             }
 
-            // --- Apply the States ---
             world.children.forEach(item => { item.tint = roomTint; });
 
             document.documentElement.style.setProperty('--sky-top', toCssHex(skyTop));
@@ -254,7 +386,6 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
             }
         }
 
-        // --- 3. REAL-WORLD TIME CALCULATOR ---
         function syncWithRealTime() {
             const now = new Date();
             const hours = now.getHours();
@@ -267,12 +398,9 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
             renderEnvironment(currentProgress);
         }
 
-        // Runs immediately when site loads to prevent the initial snapping glitch
         syncWithRealTime(); 
-        // Starts the clock updates
         setInterval(syncWithRealTime, 1000);
 
-        // --- RESIZE ---
         function resize() {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -281,11 +409,36 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
             const scale = Math.min(w / 960, h / 720) * 0.95;
             world.scale.set(scale);
             
-            // Re-calculate sun position on resize so it doesn't break
             syncWithRealTime();
         }
         window.addEventListener('resize', resize);
         resize();
+
+        // --- TEMPORARY DEBUG CONTROLS (SAFELY INSIDE ASYNC BLOCK!) ---
+        window.addEventListener('keydown', (e) => {
+            const sun = document.getElementById('weather-sun');
+            const clouds = document.getElementById('weather-clouds');
+            const rain = document.getElementById('weather-layer');
+
+            if (!sun || !clouds || !rain) return;
+
+            if (e.key === '1') {
+                sun.style.opacity = '1'; clouds.style.opacity = '0'; rain.style.opacity = '0';
+                console.log("Forced: SUNNY");
+            }
+            if (e.key === '2') {
+                sun.style.opacity = '0'; clouds.style.opacity = '1'; rain.style.opacity = '0';
+                console.log("Forced: CLOUDY");
+            }
+            if (e.key === '3') {
+                sun.style.opacity = '0'; clouds.style.opacity = '0'; rain.style.opacity = '1';
+                console.log("Forced: RAIN");
+            }
+            if (e.key === '4') {
+                sun.style.opacity = '1'; clouds.style.opacity = '1'; rain.style.opacity = '0';
+                console.log("Forced: RAIN");
+            }
+        });
 
     } catch (err) {
         console.error(err);
@@ -293,14 +446,30 @@ import { Application, Container, Assets, Sprite, TextureStyle, Graphics, Point, 
     }
 })();
 
-// --- UI LOGIC (LIVE CLOCK & POMODORO) ---
+// --- UNIFIED UI LOGIC (CLOCK & WEATHER SYNC) ---
 const clockElement = document.getElementById('live-clock');
+const weatherText = document.getElementById('live-weather-text');
+
+if (clockElement) clockElement.innerText = "LOADING TIME...";
+if (weatherText) weatherText.innerText = "LOADING WEATHER...";
+
+let isWeatherLoaded = false;
+let latestTimeString = "";
+
 setInterval(() => {
     const now = new Date();
     const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    clockElement.innerText = now.toLocaleDateString('en-US', options);
+    latestTimeString = now.toLocaleDateString('en-US', options);
+    
+    if (isWeatherLoaded && clockElement) {
+        clockElement.innerText = latestTimeString;
+    }
 }, 1000);
 
+const initNow = new Date();
+latestTimeString = initNow.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+// --- POMODORO TIMER ---
 let timerInterval;
 let timeLeft = 25 * 60; 
 
@@ -338,7 +507,7 @@ startBtn.addEventListener('click', () => {
         }
     }, 1000);
 });
-updateTimerDisplay();
+if (timerDisplay) updateTimerDisplay();
 
 // --- DYNAMIC SPEECH BUBBLE ---
 const messages = [
@@ -358,7 +527,16 @@ const bubble = document.getElementById('speech-bubble');
 const bubbleText = document.getElementById('bubble-text');
 let typingTimer; 
 
+if (bubble) {
+    bubble.style.transition = 'none';
+    bubble.style.opacity = '0';
+    setTimeout(() => {
+        bubble.style.transition = 'opacity 0.5s ease';
+    }, 100);
+}
+
 function typeWriter(text) {
+    if (!bubbleText) return;
     bubbleText.innerText = ""; 
     let i = 0;
     clearInterval(typingTimer); 
@@ -375,12 +553,14 @@ function typeWriter(text) {
 }
 
 function showBubble() {
+    if (!bubble) return;
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
     bubble.classList.remove('hidden');
     typeWriter(randomMessage);
 }
 
 function hideBubble() {
+    if (!bubble) return;
     bubble.classList.add('hidden');
     scheduleNextMessage(); 
 }
@@ -395,9 +575,23 @@ scheduleNextMessage();
 const weatherLayer = document.getElementById('weather-layer');
 const cloudLayer = document.getElementById('weather-clouds');
 
-// 1. Generate Raindrops
+if (weatherLayer) {
+    weatherLayer.style.transition = 'none';
+    weatherLayer.style.opacity = '0';
+}
+if (cloudLayer) {
+    cloudLayer.style.transition = 'none';
+    cloudLayer.style.opacity = '0';
+}
+
+setTimeout(() => {
+    if (weatherLayer) weatherLayer.style.transition = 'opacity 2s ease';
+    if (cloudLayer) cloudLayer.style.transition = 'opacity 2s ease';
+}, 100);
+
 for (let i = 0; i < 100; i++) {
-    const drop = document.createElement('div');
+    const drop = document.createElement('img'); 
+    drop.src = './assets/rain.png'; 
     drop.classList.add('raindrop');
     
     drop.style.left = `${Math.random() * 120}vw`; 
@@ -407,7 +601,6 @@ for (let i = 0; i < 100; i++) {
     if (weatherLayer) weatherLayer.appendChild(drop);
 }
 
-// 2. Generate Image Clouds
 const cloudImages = ['/assets/cloud.png', '/assets/cloud2.png'];
 for (let i = 0; i < 6; i++) {
     const wrapper = document.createElement('div');
@@ -431,27 +624,16 @@ for (let i = 0; i < 6; i++) {
     if (cloudLayer) cloudLayer.appendChild(wrapper);
 }
 
-// 3. Live Weather Controller (OpenWeatherMap)
 async function fetchLiveWeather() {
-    const apiKey = '89ab74ef53eb7ae3c0e036d5d9953e2e'; 
-    
-    if (apiKey.includes('***')) {
-        console.warn("Weather API Key incomplete. Please replace the *** with your last 3 digits.");
-        return; 
-    }
+    const apiKey = import.meta.env.VITE_WEATHER_API_KEY; 
 
     const lat = -31.87; 
     const lon = 115.93; 
-    
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
 
     try {
         const response = await fetch(url);
-        
-        if (!response.ok) {
-            console.error(`Weather API Error: ${response.status} ${response.statusText}.`);
-            return;
-        }
+        if (!response.ok) throw new Error("API Error");
 
         const data = await response.json();
         const weatherId = data.weather[0].id;
@@ -464,40 +646,20 @@ async function fetchLiveWeather() {
         if (document.getElementById('weather-sun')) document.getElementById('weather-sun').style.opacity = isClear ? '1' : '0';
         if (cloudLayer) cloudLayer.style.opacity = isCloudy ? '1' : '0';
         
-        const weatherText = document.getElementById('live-weather-text');
-        if (weatherText) {
-            weatherText.innerText = `${data.weather[0].main} | ${Math.round(data.main.temp)}°C`;
-        }
+        const latestWeatherString = `${data.weather[0].main} | ${Math.round(data.main.temp)}°C`;
+        
+        isWeatherLoaded = true; 
+        if (clockElement) clockElement.innerText = latestTimeString;
+        if (weatherText) weatherText.innerText = latestWeatherString;
+
     } catch (error) {
         console.error("Failed to fetch weather data:", error);
+        if (weatherText) weatherText.innerText = "WEATHER OFFLINE";
+        
+        isWeatherLoaded = true; 
+        if (clockElement) clockElement.innerText = latestTimeString;
     }
 }
 
 fetchLiveWeather(); 
 setInterval(fetchLiveWeather, 60 * 60 * 1000);
-
-// --- TEMPORARY DEBUG CONTROLS ---
-window.addEventListener('keydown', (e) => {
-    const sun = document.getElementById('weather-sun');
-    const clouds = document.getElementById('weather-clouds');
-    const rain = document.getElementById('weather-layer');
-
-    if (!sun || !clouds || !rain) return;
-
-    if (e.key === '1') {
-        sun.style.opacity = '1'; clouds.style.opacity = '0'; rain.style.opacity = '0';
-        console.log("Forced: SUNNY");
-    }
-    if (e.key === '2') {
-        sun.style.opacity = '0'; clouds.style.opacity = '1'; rain.style.opacity = '0';
-        console.log("Forced: CLOUDY");
-    }
-    if (e.key === '3') {
-        sun.style.opacity = '0'; clouds.style.opacity = '0'; rain.style.opacity = '1';
-        console.log("Forced: RAIN");
-    }
-    if (e.key === '4') {
-        sun.style.opacity = '1'; clouds.style.opacity = '1'; rain.style.opacity = '0';
-        console.log("Forced: RAIN");
-    }
-});321
