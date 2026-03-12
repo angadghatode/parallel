@@ -1,0 +1,122 @@
+@import url('./room.css');
+@import url('./timer.css');
+@import url('./weather.css');
+@import url('./chat.css');
+
+:root {
+    --ui-box: #27262A;
+    --ui-border: #CCC8C0;
+    --ui-text-primary: #F3E2B4;
+    --ui-text-secondary: #A09B9A;
+
+    --sky-top: #0B0B1A; 
+    --sky-mid1: #1c142c;
+    --sky-mid2: #251d36;
+    --sky-bottom: #2D263C; 
+}
+
+/* Make sure your fonts are inside your public/fonts/ folder! */
+@font-face {
+    font-family: 'PixelFont1'; 
+    src: url('/fonts/crang/Crang.ttf') format('truetype'); 
+}
+
+@font-face {
+    font-family: 'PixelFont2'; 
+    src: url('/fonts/pearsoda/PearSoda.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'PixelFont3'; 
+    src: url('/fonts/qaaxee/Qaaxee.ttf') format('truetype');
+}
+
+* {
+    box-shadow: none !important;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'PixelFont3', sans-serif; /* Forces global font */
+    color: var(--ui-text-primary); /* Forces global text color */
+    background: linear-gradient(
+        to bottom,
+        var(--sky-top) 0%, var(--sky-top) 25%,
+        var(--sky-mid1) 25%, var(--sky-mid1) 50%,
+        var(--sky-mid2) 50%, var(--sky-mid2) 75%,
+        var(--sky-bottom) 75%, var(--sky-bottom) 100%
+    );
+    position: relative; 
+    transition: background 2s ease; 
+}
+
+#app-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100000; 
+    pointer-events: none;
+    padding: 4vmin; 
+}
+
+button, input, #task-input-container, #speech-bubble {
+    pointer-events: auto; 
+    font-family: 'PixelFont3', sans-serif; /* Force fonts on inputs */
+}
+
+#title {
+    position: absolute;
+    top: 4vmin;
+    left: 4vmin;
+    font-size: 6vmin; 
+    color: var(--ui-text-primary);
+    margin: 0;
+    font-family: 'PixelFont3', sans-serif;
+    text-shadow: 4px 4px 0px var(--ui-box); 
+}
+
+/* --- LOADING SCREEN --- */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #0B0B1A; /* Matches your night sky */
+    color: var(--ui-text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999; /* Sits over the weather, UI, and Pixi */
+    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+}
+
+.loading-text {
+    font-family: 'PixelFont3', sans-serif;
+    font-size: 6vmin;
+    text-shadow: 4px 4px 0px var(--ui-box);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* JavaScript will add this class when everything is ready */
+#loading-screen.hidden-loader {
+    opacity: 0;
+    visibility: hidden;
+}

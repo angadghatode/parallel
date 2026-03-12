@@ -1,0 +1,66 @@
+#timer-box {
+    position: absolute;
+    bottom: 4vmin;
+    right: 4vmin;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; 
+    color: var(--ui-text-primary);
+}
+
+.time {
+    font-family: 'PixelFont3', sans-serif;
+    text-shadow: 4px 4px 0px var(--ui-box); 
+    font-size: 10vmin; 
+    line-height: 0.8;
+}
+
+#task-input-container {
+    display: flex;
+    gap: 1vmin;
+    align-items: center;
+    margin-top: 1vmin;
+}
+
+#task-input {
+    font-family: inherit;
+    background: transparent; 
+    border: none;
+    color: var(--ui-text-primary);
+    font-size: 2.5vmin;
+    text-transform: uppercase;
+    text-align: right; 
+    width: 25vmin;
+    outline: none;
+    padding: 0.5vmin;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+#task-input:focus {
+    color: var(--ui-text-primary);
+}
+
+#task-input::placeholder {
+    color: var(--ui-text-primary);
+    opacity: 0.6;
+}
+
+#start-btn {
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    background-image: url('/assets/button.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 5vmin; 
+    height: 5vmin;
+    cursor: pointer;
+    image-rendering: pixelated; 
+    transition: transform 0.1s ease;
+}
+
+#start-btn:active {
+    transform: translateY(4px);
+}
