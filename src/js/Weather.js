@@ -1,3 +1,4 @@
+// --- src/js/Weather.js ---
 export async function setupWeather(world, env) {
     const clockElement = document.getElementById('live-clock');
     const weatherText = document.getElementById('live-weather-text');
@@ -7,17 +8,16 @@ export async function setupWeather(world, env) {
     const moonElement = document.getElementById('weather-moon');
     const starLayer = document.getElementById('star-layer');
 
+    let isRoomLit = true;
     let isWeatherLoaded = false;
     let latestWeatherString = "LOADING WEATHER...";
     let latestTimeString = "LOADING TIME...";
     
-    // 💡 THE LIGHT SWITCHES
     let isLampOn = false; 
-    let debugForceNight = false; // Overrides the clock
-    let debugForceDay = false;
-    let isClearSky = true;
+    let debugForceNight = false; 
+    let debugForceDay = false; 
+    let isClearSky = true; 
 
-    // --- 1. GENERATE RAIN ---
     if (weatherLayer && weatherLayer.children.length === 0) {
         for (let i = 0; i < 150; i++) { 
             const drop = document.createElement('div'); 
@@ -29,7 +29,6 @@ export async function setupWeather(world, env) {
         }
     }
 
-    // --- 2. GENERATE CLOUDS ---
     if (cloudLayer && cloudLayer.children.length === 0) {
         const cloudImages = ['/assets/cloud.png', '/assets/cloud2.png']; 
         for (let i = 0; i < 6; i++) {
@@ -69,46 +68,6 @@ export async function setupWeather(world, env) {
         }
     }
 
-    // --- DEVELOPER DEBUG CONTROLS ---
-    window.addEventListener('keydown', (e) => {
-        if (e.key === '1') {
-            if(sunElement) sunElement.style.opacity = '1'; 
-            if(cloudLayer) cloudLayer.style.opacity = '0'; 
-            if(weatherLayer) weatherLayer.style.opacity = '0';
-        }
-        if (e.key === '2') {
-            if(sunElement) sunElement.style.opacity = '0'; 
-            if(cloudLayer) cloudLayer.style.opacity = '1'; 
-            if(weatherLayer) weatherLayer.style.opacity = '0';
-        }
-        if (e.key === '3') {
-            if(sunElement) sunElement.style.opacity = '0'; 
-            if(cloudLayer) cloudLayer.style.opacity = '0'; 
-            if(weatherLayer) weatherLayer.style.opacity = '1';
-        }
-        if (e.key === '4') {
-            if(sunElement) sunElement.style.opacity = '1'; 
-            if(cloudLayer) cloudLayer.style.opacity = '1'; 
-            if(weatherLayer) weatherLayer.style.opacity = '0';
-        }
-        if (e.key === '5') {
-            debugForceNight = !debugForceNight;
-            console.log("Forced Night Mode:", debugForceNight);
-            triggerInstantRender();
-        }
-        if (e.key === '6') {
-            isLampOn = !isLampOn;
-            console.log("Forced Desk Lamp:", isLampOn);
-            triggerInstantRender();
-        }
-        if (e.key === '7') { // <-- NEW: Force Day
-            debugForceDay = !debugForceDay;
-            if (debugForceDay) debugForceNight = false; // Turn off night if day is forced
-            console.log("Forced Day Mode:", debugForceDay);
-            triggerInstantRender();
-        }
-    });
-
     function triggerInstantRender() {
         const now = new Date();
         renderEnvironment(((now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds()) / 86400);
@@ -124,11 +83,9 @@ export async function setupWeather(world, env) {
     }
     function toCssHex(num) { return '#' + num.toString(16).padStart(6, '0'); }
 
-    // --- 24-HOUR ENVIRONMENT RENDERER ---
     function renderEnvironment(progress) {
-        // 🛠️ Apply Night Override if Key 5 is active
-        if (debugForceNight) progress = 0.0; // 0.0 is exact midnight
-        if (debugForceDay) progress = 0.5;
+        if (debugForceNight) progress = 0.0; 
+        if (debugForceDay) progress = 0.5;   
 
         let roomTint, skyTop, skyMid1, skyMid2, skyBottom, starOpacity;
         let sunX = 0, sunY = 0, sunOpacity = 0;
@@ -202,20 +159,15 @@ export async function setupWeather(world, env) {
             moonOpacity = 1; sunY = Y_HIDDEN;
         }
 
-        // 💡 THE SAFE DAY/NIGHT LIGHTING TRICK
         const isNightTime = (progress < 0.25 || progress > 0.75);
 
         if (isLampOn && isNightTime) {
-            // It is actually dark out, so we need the cutout mask!
-            roomTint = 0xFFFFFF; // Remove uniform tint so the "hole" is brightly colored
-            if (env && env.nightOverlay) env.nightOverlay.visible = true; // Turn on mask
+            roomTint = 0xFFFFFF; 
+            if (env && env.nightOverlay) env.nightOverlay.visible = true; 
         } else {
-            // Either the lamp is off, OR it's broad daylight. 
             if (env && env.nightOverlay) env.nightOverlay.visible = false;
-            // roomTint remains whatever the gradient logic calculated
         }
 
-        // Apply tint strictly to the environment items, ignoring the mask layer itself
         if (env && env.envContainer) {
             env.envContainer.children.forEach(item => { 
                 if (item !== env.nightOverlay) item.tint = roomTint; 
@@ -254,11 +206,10 @@ export async function setupWeather(world, env) {
             const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=-31.87&lon=115.93&appid=${apiKey}&units=metric`);
             const data = await res.json();
             const id = data.weather[0].id;
-
+            
             isClearSky = (id === 800);
-            
+
             if (weatherLayer) weatherLayer.style.opacity = (id >= 200 && id < 600) ? '1' : '0';
-            
             if (cloudLayer) cloudLayer.style.opacity = (id >= 801 && id <= 804) ? '1' : '0';
             
             latestWeatherString = `${data.weather[0].main} | ${Math.round(data.main.temp)}°C`;
@@ -273,10 +224,29 @@ export async function setupWeather(world, env) {
     await fetchLiveWeather(); 
     setInterval(fetchLiveWeather, 3600000); 
 
-    // Return the light switch so Timer/Angad can use it!
     return {
         setLights: (isOn) => {
             isLampOn = isOn;
+            triggerInstantRender();
+        },
+        toggleLamp: () => {
+            isLampOn = !isLampOn;
+            triggerInstantRender();
+        },
+        forceWeather: (type) => {
+            if (type === 'clear') {
+                isClearSky = true; 
+                if (cloudLayer) cloudLayer.style.opacity = '0'; 
+                if (weatherLayer) weatherLayer.style.opacity = '0';
+            } else if (type === 'cloudy') {
+                isClearSky = false; 
+                if (cloudLayer) cloudLayer.style.opacity = '1'; 
+                if (weatherLayer) weatherLayer.style.opacity = '0';
+            } else if (type === 'rain') {
+                isClearSky = false; 
+                if (cloudLayer) cloudLayer.style.opacity = '1'; 
+                if (weatherLayer) weatherLayer.style.opacity = '1';
+            }
             triggerInstantRender();
         }
     };

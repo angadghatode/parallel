@@ -45,6 +45,8 @@ export function setupEnvironment(world, textures) {
     kitchen.zIndex = 998; 
     envContainer.addChild(kitchen);
 
+     // --- ANIMATED PROPS ---
+
     const sleepFrames = createFrames(getTex('room_base_sofa_sleeping-sheet.png'), 4);
     let sofaSleeping = null;
     
@@ -60,7 +62,34 @@ export function setupEnvironment(world, textures) {
         envContainer.addChild(sofaSleeping);
     }
 
-    // --- ANIMATED PROPS ---
+    const sitFrames = createFrames(getTex('room_base_sofa_sitting.png'), 2); // Adjust frame count if needed
+    let sofaSitting = null;
+
+    if (sitFrames.length > 0) {
+        sofaSitting = new AnimatedSprite(sitFrames);
+        sofaSitting.anchor.set(0.5, 0.5);
+        sofaSitting.y = 0; 
+        sofaSitting.zIndex = 51; 
+        sofaSitting.animationSpeed = 0.005; 
+        sofaSitting.loop = true;
+        sofaSitting.visible = false; 
+        envContainer.addChild(sofaSitting);
+    }
+
+    const coffeeFrames = createFrames(getTex('angad_coffee_sipping.png'), 2); // Adjust frame count
+    let coffeeSipping = null;
+
+    if (coffeeFrames.length > 0) {
+        coffeeSipping = new AnimatedSprite(coffeeFrames);
+        coffeeSipping.anchor.set(0.5, 0.5);
+        coffeeSipping.zIndex = 997; // Sits just behind kitchen overlay
+        coffeeSipping.animationSpeed = 0.005; 
+        coffeeSipping.loop = true;
+        coffeeSipping.visible = false; 
+        envContainer.addChild(coffeeSipping);
+    }
+
+   
     const compStartupFrames = createFrames(getTex('Computer_turn_on.png'), 7);
     const compTypingFrames = createFrames(getTex('Computer_TYPING.png'), 12);
     let computer = null;
@@ -157,5 +186,5 @@ export function setupEnvironment(world, textures) {
     }
 
     // Return the envContainer and the new hiddenPolygon!
-    return { envContainer, room, computer, tv, leakyTap, hiddenPolygon, nightOverlay, sofaSleeping };
+    return { envContainer, room, computer, tv, leakyTap, hiddenPolygon, nightOverlay, sofaSleeping, sofaSitting, coffeeSipping };
 }
