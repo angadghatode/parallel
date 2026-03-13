@@ -55,7 +55,7 @@
 .raindrop {
     position: absolute;
     background: #8FA9D4; 
-    width: 5px; 
+    width: 2px; 
     height: 20px; 
     animation: fall linear infinite;
 }
@@ -160,4 +160,75 @@ body.time-night {
 @keyframes drift {
     0% { transform: translateX(-30vw); }
     100% { transform: translateX(120vw); }
+}
+
+@media (max-width: 1180px) {
+    #live-clock {
+        position: absolute;
+        top: 13vmin; 
+        left: 4vmin;
+        font-family: 'PixelFont3', sans-serif;
+        font-size: 3.5vmin;
+        color: var(--ui-text-secondary); 
+        text-shadow: 2px 2px 0px var(--ui-box);
+    }
+
+    #live-weather-text {
+        position: absolute;
+        top: 18vmin; 
+        left: 4vmin;
+        font-family: 'PixelFont3', sans-serif;
+        font-size: 2.9vmin;
+        color: var(--ui-text-secondary); 
+        text-shadow: 2px 2px 0px var(--ui-box);
+    }
+}
+
+/* --- 📱 MOBILE RESPONSIVE OVERRIDES --- */
+@media (max-width: 950px) {
+    
+    .raindrop {
+        height: 12px !important;    
+        opacity: 0.6;     
+    }          
+
+    #ui-overlay {
+        padding-bottom: 8vmin !important; 
+    }
+
+    #live-clock {
+        position: absolute;
+        top: 16vmin; 
+        left: 4vmin;
+        font-family: 'PixelFont3', sans-serif;
+        font-size: 4.5vmin;
+        color: var(--ui-text-secondary); 
+        text-shadow: 2px 2px 0px var(--ui-box);
+    }
+
+    #live-weather-text {
+        position: absolute;
+        top: 23vmin; 
+        left: 4vmin;
+        font-family: 'PixelFont3', sans-serif;
+        font-size: 4vmin;
+        color: var(--ui-text-secondary); 
+        text-shadow: 2px 2px 0px var(--ui-box);
+    }
+
+    #weather-sun, #weather-moon {
+        position: absolute;
+        width: 15vmin; 
+        height: auto;
+        z-index: 2; 
+        pointer-events: none; 
+        transform: translate(-50%, 0%); 
+        image-rendering: pixelated; 
+    }
+
+    #weather-moon {
+        width: 35vmin; 
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+    }
+
 }

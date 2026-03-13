@@ -62,7 +62,7 @@ export async function setupWeather(world, env) {
             const size = Math.floor(Math.random() * 4 + 1) * 2;
             star.style.width = `${size}px`;
             star.style.height = `${size}px`;
-            star.style.background = 'white';
+            star.style.background = 'grey';
             star.style.animationDelay = `-${Math.random() * 4}s`;
             starLayer.appendChild(star);
         }
@@ -198,7 +198,7 @@ export async function setupWeather(world, env) {
         const totalSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
         renderEnvironment(totalSeconds / 86400);
         updateUI(); 
-    }, 1000);
+    });
 
     async function fetchLiveWeather() {
         const apiKey = import.meta.env.VITE_WEATHER_API_KEY; 
