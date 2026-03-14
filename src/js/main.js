@@ -189,4 +189,18 @@ import { Graphics } from 'pixi.js';
         const loaderText = document.querySelector('.loading-text');
         if (loaderText) loaderText.innerText = "SYSTEM ERROR";
     }
+
+    setTimeout(() => {
+            requestAnimationFrame(() => {
+                const loader = document.getElementById('loading-screen');
+                if (loader) loader.classList.add('hidden-loader');
+                
+                const ui = document.getElementById('ui-overlay');
+                if (ui) ui.style.opacity = '1';
+
+                // 🚀 THE WAKE UP CALL: 
+                // Force PixiJS to recalculate the world size now that the CSS is fully loaded
+                window.dispatchEvent(new Event('resize')); 
+            });
+        }, 900);
 })();

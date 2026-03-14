@@ -40,7 +40,7 @@
 body, html {
     margin: 0;
     padding: 0;
-    width: 100dvh;
+    width: 100vw;
     height: 100dvh;
     overflow: hidden;
     background-color: #0B0B1A;
@@ -58,10 +58,37 @@ body, html {
     overscroll-behavior: none;
 }
 
+#app {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none; /* Forces it to ignore any lingering Vite defaults! */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
 #app-container {
     position: relative;
     width: 100vw;
     height: 100dvh;
+}
+
+#pixi-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+    z-index: 1; /* Sits behind the UI overlay */
+}
+
+/* 🚀 THE FIX: Force the HTML canvas to stretch to the container boundaries */
+#pixi-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    outline: none;
 }
 
 #ui-overlay {
