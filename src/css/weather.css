@@ -102,7 +102,7 @@ body.time-night {
     position: absolute;
     width: 15vmin; 
     height: auto;
-    z-index: 0; 
+    z-index: 2; 
     pointer-events: none; 
     transform: translate(-50%, -50%); 
     image-rendering: pixelated; 
@@ -127,7 +127,7 @@ body.time-night {
 
 .star {
     position: absolute;
-    z-index: -1; 
+    z-index: 1; 
     animation: spin 4s linear infinite;
     transition: none !important;
 }
@@ -139,7 +139,7 @@ body.time-night {
 #weather-clouds {
     position: absolute;
     inset: 0;
-    z-index: 0;
+    z-index: 3;
     pointer-events: none;
     opacity: 0;
     transition: opacity 2s ease;

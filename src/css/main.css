@@ -80,7 +80,7 @@ body, html {
     width: 100vw;
     height: 100dvh;
     overflow: hidden;
-    z-index: 1; /* Sits behind the UI overlay */
+    z-index: 10; /* Sits behind the UI overlay */
 }
 
 /* 🚀 THE FIX: Force the HTML canvas to stretch to the container boundaries */
