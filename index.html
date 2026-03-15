@@ -20,11 +20,13 @@
         }
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; outline: none; }
     </style>
-    <script type="module" crossorigin src="/assets/index-xnrdXRhZ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-ts9Qolam.css">
-  </head>
-  <body>
-    <div id="app-container">
+
+    <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
+      <script type="module" crossorigin src="/assets/index-v0DSt_nv.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-BveIUR8U.css">
+    </head>
+    <body>
+        <div id="app-container">
         <div id="star-layer"></div>
         <div id="pixi-container"></div>
         <div id="weather-layer"></div>
@@ -32,6 +34,8 @@
         <img id="weather-sun" src="/assets/sun.png" alt="Sunny" style="opacity: 0;" />
         <img id="weather-moon" src="/assets/moon.png" alt="Moon" style="opacity: 0;" /> 
         <div id="weather-clouds"></div>
+
+        <div id="youtube-player" style="position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px;"></div>
         
         <div id="ui-overlay" style="opacity: 0; transition: opacity 1s ease;" >
             <div id="title">ANGAD'S ROOM</div>
@@ -43,7 +47,7 @@
             </button>
 
             <div id="task-sidebar" class="hidden-panel">
-                <button id="close-sidebar-btn" class="img-btn">
+                <button id="close-sidebar-btn" class="img-btn" style="margin-bottom: 2vmin;">
                     <img src="/assets/button_close.png" alt="Close">
                 </button>
                 
@@ -51,8 +55,7 @@
                     <h2>TASK SUMMARY</h2>
                 </div>
                 
-                <div id="task-sidebar-list">
-                    </div>
+                <div id="task-sidebar-list"></div>
                 
                 <div id="queue-input-container" style="display: none; margin-top: 2vmin; width: 100%;">
                     <input type="text" id="queue-input" class="sidebar-task-notes" placeholder="TYPE TASK AND PRESS ENTER..." style="min-height: auto; padding: 1.5vmin; margin: 0; width: 100%; box-sizing: border-box;" />
@@ -71,15 +74,6 @@
                     <button id="button_pause" class="img-btn" style="display: none;"><img src="/assets/button_pause.png" alt="Pause"></button>
                     <button id="button_stop" class="img-btn" style="display: none;"><img src="/assets/button_stop.png" alt="Stop"></button>
                 </div>
-
-                <div id="continue-popup" style="display: none;" class="ui-panel">
-                    <p>Break over! Resume current task or continue with next task?</p>
-                    <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center;">
-                        <button id="btn-resume-task" class="img-btn"><img src="/assets/button.png" alt="Resume"></button>
-                        <button id="btn-next-task" class="img-btn"><img src="/assets/button_next.png" alt="Next Task"></button>
-                    </div>
-                </div>
-
             </div>
 
             <div id="speech-bubble-wrap" class="hidden">
@@ -95,11 +89,22 @@
                 <div id="speech-bubble-tail-inner"></div>
             </div>
 
-        </div>
-    </div>
-  
-    <div id="loading-screen">
+        </div> </div> <div id="loading-screen">
         <div class="loading-text">LOADING...</div>
+    </div>
+
+    <div id="continue-popup" style="display: none; position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 999999 !important; width: 90vw; max-width: 450px; text-align: center; background: var(--ui-box); border: 4px solid var(--ui-border); padding: 4vmin; box-sizing: border-box;">
+        
+        <button class="close-btn" id="popup-close-btn">
+            <img src="/assets/close.png" alt="Close">
+        </button>
+
+        <p style="margin-bottom: 2vmin;">Break over! Resume current task or continue with next task?</p>
+        
+        <div style="display: flex; justify-content: center; gap: 4vmin;">
+            <button id="btn-resume-task" class="img-btn"><img src="/assets/button.png" alt="Play"></button>
+            <button id="btn-next-task" class="img-btn"><img src="/assets/button_next.png" alt="Skip"></button>
+        </div>
     </div>
   
   </body>
