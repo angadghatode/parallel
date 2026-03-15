@@ -150,18 +150,415 @@ button, input, #task-input-container, #speech-bubble {
     visibility: hidden;
 }
 
+.ui-panel {
+    background: var(--ui-box);
+    border: 4px solid var(--ui-border);
+    padding: 2vmin;
+    margin-top: 2vmin;
+}
+
+.text-btn {
+    font-family: 'PixelFont3', sans-serif;
+    background: white;
+    color: var(--ui-box);
+    border: none;
+    padding: 0.5vmin 1vmin;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.text-btn:active {
+    transform: translateY(2px);
+}
+
+.task-item {
+    padding: 4px 0;
+    border-bottom: 2px dashed rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* --- SLIDING TASK SIDEBAR --- */
+#task-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 35vmin;
+    min-width: 250px;
+    height: 100dvh;
+    background: var(--ui-box);
+    border-left: 4px solid var(--ui-border);
+    z-index: 100000;
+    padding: 4vmin;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    
+    /* Sliding Animation */
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: auto; /* Allow clicking inside */
+}
+
+/* Add this class via JS to slide it in */
+#task-sidebar.active {
+    transform: translateX(0);
+}
+
+#task-sidebar h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--ui-border);
+    padding-bottom: 1vmin;
+    font-size: 3vmin;
+    text-transform: uppercase;
+}
+
+/* Individual Task Cards in the Sidebar */
+.sidebar-task {
+    margin-bottom: 3vmin;
+    font-family: 'PixelFont3', sans-serif;
+    border-bottom: 2px solid var(--ui-border);
+}
+
+.sidebar-task-title {
+    font-size: 2.2vmin;
+    font-weight: bold;
+    color: var(--ui-text-primary);
+    text-transform: uppercase;
+}
+
+.sidebar-task-times {
+    font-size: 1.6vmin;
+    color: var(--ui-text-secondary);
+    margin: 1vmin 0;
+    line-height: 1.4;
+}
+
+.sidebar-task-notes {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--ui-border);
+    color: var(--ui-text-primary);
+    font-family: 'PixelFont3', sans-serif;
+    font-size: 1.6vmin;
+    padding: 1vmin;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 8vmin;
+    outline: none;
+    margin-bottom: 3vmin;
+}
+
+.sidebar-task-notes:focus {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- MENU BUTTON --- */
+#menu-btn {
+    position: absolute;
+    top: 4vmin;
+    right: 4vmin;
+    z-index: 10000; /* Keeps it clickable above the sidebar */
+}
+
+#menu-btn img {
+    width: 6vmin; 
+    height: auto;
+    image-rendering: pixelated;
+}
+
+/* Add to src/css/main.css */
+#close-sidebar-btn {
+    position: absolute;
+    top: 2vmin;
+    right: 2vmin; /* 🚀 Placed cleanly in the top right corner of the menu */
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    z-index: 100003;
+    cursor: pointer;
+}
+
+#close-sidebar-btn img {
+    width: 5vmin;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+#queue-btn:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--ui-text-primary) !important;
+    border-color: var(--ui-text-primary) !important;
+}
+
+.empty-tasks {
+    font-family: 'PixelFont3', sans-serif;
+    color: var(--ui-text-secondary);
+    font-size: 2vmin;
+    text-align: center;
+    margin-bottom: 2vmin;
+}
+
+/* Add this to your src/css/main.css */
+
+/* Summary Header & Spacing */
+/* src/css/main.css (Add to the bottom of your file) */
+
+.sidebar-header {
+    padding-bottom: 1vmin;
+    margin-top: 0;
+}
+
+.sidebar-header h2 {
+    padding-bottom: 0;
+    margin: 0;
+}
+
+#task-sidebar-list {
+    margin-top: 3vmin; 
+}
+
+/* Delete & Rearrange Buttons */
+.task-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.task-actions {
+    display: flex;
+    gap: 1vmin;
+    align-items: center;
+}
+
+.drag-handle, .delete-task-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.drag-handle img, .delete-task-btn img {
+    width: 3vmin;
+    height: auto;
+    image-rendering: pixelated;
+}
+
+.delete-task-btn img {
+    content: url('/assets/button_bin.png'); 
+}
+
+.delete-task-btn:hover img {
+    content: url('/assets/button_bin-red.png'); 
+}
+
+.drag-handle {
+    cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Drag & Drop Visuals */
+.sidebar-task {
+    transition: transform 0.1s, opacity 0.1s;
+}
+
+.sidebar-task.dragging {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed var(--ui-text-secondary);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    transform: scale(0.98);
+}
+
+.sidebar-notes-label {
+    font-size: 1.5vmin;
+    margin-bottom: 2px;
+    font-family: 'PixelFont3', sans-serif;
+    color: var(--ui-text-primary);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @media (max-width: 1180px) {
     #title {
         position: absolute;
         top: 4vmin;
         left: 4vmin;
-        font-size: 8vmin; 
+        font-size: 10vmin; 
         color: var(--ui-text-primary);
         margin: 0;
         font-family: 'PixelFont3', sans-serif;
         text-shadow: 4px 4px 0px var(--ui-box); 
     }
+
+    #menu-btn {
+        position: absolute;
+        top: 4vmin;
+        right: 4vmin;
+        z-index: 10000; 
+    }
+
+    #menu-btn img {
+        width: 8vmin; 
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    /* 🚀 THE FULL SCREEN TASK SIDEBAR (Fixed ID!) */
+    #task-sidebar {
+        width: 70dvh !important;
+        max-width: 100dvh !important;
+        height: 100dvh !important;
+        right: 0 !important;
+        top: 0 !important;
+        box-sizing: border-box !important;
+        border-radius: 0 !important;
+        padding: 8vmin !important;
+        background-color: var(--ui-box); 
+        z-index: 100002; 
+    }
+
+    /* Boosts headers inside the sidebar ("TASK SUMMARY") */
+    #task-sidebar h2, 
+    .sidebar-header h2 {
+        font-size: 6vmin !important;
+        margin-bottom: 4vmin !important;
+    }
+
+    /* 🚀 TARGETED TASK ITEM SCALING */
+    .sidebar-task-title {
+        font-size: 5vmin !important; /* Makes the task name massive */
+    }
+
+    .sidebar-task-times {
+        font-size: 3vmin !important; /* Makes the timestamps readable */
+        margin: 2vmin 0 !important;
+    }
+
+    .sidebar-task-notes {
+        font-size: 3vmin !important;
+        min-height: 15vh !important;
+        padding: 3vmin !important;
+    }
+
+    /* 🚀 SCALES THE REARRANGE AND DELETE BUTTONS */
+    .drag-handle img, 
+    .delete-task-btn img {
+        width: 6vmin !important; /* Doubles the size of the tiny icons */
+        height: auto;
+    }
+
+    #close-sidebar-btn {
+        position: absolute;
+        top: 4vmin !important;   
+        right: 4vmin !important; 
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        z-index: 100003;
+        cursor: pointer;
+    }
+
+    #close-sidebar-btn img {
+        width: 8vmin !important; 
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    .empty-tasks {
+        font-family: 'PixelFont3', sans-serif;
+        color: var(--ui-text-secondary);
+        font-size: 4.5vmin !important; 
+        text-align: center;
+        margin-bottom: 4vmin !important;
+    }
+
+    /* Expands the input and textarea for mobile typing */
+    #task-sidebar textarea,
+    #task-sidebar input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Makes the queue button massive and easy to hit */
+    #queue-btn {
+        width: 100% !important;
+        padding: 4vmin !important;
+        font-size: 5vmin !important;
+        margin-top: 4vmin !important;
+    }
+
+    #queue-btn:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: var(--ui-text-primary) !important;
+        border-color: var(--ui-text-primary) !important;
+    }
+
+    #task-sidebar label,
+    #task-sidebar p,
+    #task-sidebar span,
+    .est-finish {
+        font-size: 4vmin !important;
+        display: block; /* Ensures they space out correctly */
+    }
+
+    #task-sidebar label {
+        margin-bottom: 2vmin !important;
+    }
+
+    /* Center and space out the EST FINISH text */
+    #task-sidebar p, .est-finish {
+        margin-top: 4vmin !important;
+        text-align: center;
+    }
+
+    .mobile-label,
+    #task-sidebar strong, 
+    #task-sidebar h3, 
+    #task-sidebar h4 {
+        font-size: 4.5vmin !important;
+        margin-bottom: 2vmin !important;
+        display: block !important;
+        color: var(--ui-text-primary) !important;
+    }
+
+    .sidebar-notes-label {
+        font-size: 3.5vmin !important;
+        margin-bottom: 2vmin !important;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 @media (max-width: 950px) {
     #title {
@@ -174,4 +571,141 @@ button, input, #task-input-container, #speech-bubble {
         font-family: 'PixelFont3', sans-serif;
         text-shadow: 4px 4px 0px var(--ui-box); 
     }
+
+    #menu-btn {
+        position: absolute;
+        top: 4vmin;
+        right: 4vmin;
+        z-index: 10000; 
+    }
+
+    #menu-btn img {
+        width: 11vmin; 
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    /* 🚀 THE FULL SCREEN TASK SIDEBAR (Fixed ID!) */
+    #task-sidebar {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100dvh !important;
+        right: 0 !important;
+        top: 0 !important;
+        box-sizing: border-box !important;
+        border-radius: 0 !important;
+        padding: 8vmin !important;
+        background-color: var(--ui-box); 
+        z-index: 100002; 
+    }
+
+    /* Boosts headers inside the sidebar ("TASK SUMMARY") */
+    #task-sidebar h2, 
+    .sidebar-header h2 {
+        font-size: 8vmin !important;
+        margin-bottom: 4vmin !important;
+    }
+
+    /* 🚀 TARGETED TASK ITEM SCALING */
+    .sidebar-task-title {
+        font-size: 5vmin !important; /* Makes the task name massive */
+    }
+
+    .sidebar-task-times {
+        font-size: 4vmin !important; /* Makes the timestamps readable */
+        margin: 2vmin 0 !important;
+    }
+
+    .sidebar-task-notes {
+        font-size: 4vmin !important;
+        min-height: 15vh !important;
+        padding: 3vmin !important;
+    }
+
+    /* 🚀 SCALES THE REARRANGE AND DELETE BUTTONS */
+    .drag-handle img, 
+    .delete-task-btn img {
+        width: 6vmin !important; /* Doubles the size of the tiny icons */
+        height: auto;
+    }
+
+    #close-sidebar-btn {
+        position: absolute;
+        top: 4vmin !important;   
+        right: 4vmin !important; 
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        z-index: 100003;
+        cursor: pointer;
+    }
+
+    #close-sidebar-btn img {
+        width: 8vmin !important; 
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    .empty-tasks {
+        font-family: 'PixelFont3', sans-serif;
+        color: var(--ui-text-secondary);
+        font-size: 4.5vmin !important; 
+        text-align: center;
+        margin-bottom: 4vmin !important;
+    }
+
+    /* Expands the input and textarea for mobile typing */
+    #task-sidebar textarea,
+    #task-sidebar input {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* Makes the queue button massive and easy to hit */
+    #queue-btn {
+        width: 100% !important;
+        padding: 4vmin !important;
+        font-size: 5vmin !important;
+        margin-top: 4vmin !important;
+    }
+
+    #queue-btn:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: var(--ui-text-primary) !important;
+        border-color: var(--ui-text-primary) !important;
+    }
+
+    #task-sidebar label,
+    #task-sidebar p,
+    #task-sidebar span,
+    .est-finish {
+        font-size: 4vmin !important;
+        display: block; /* Ensures they space out correctly */
+    }
+
+    #task-sidebar label {
+        margin-bottom: 2vmin !important;
+    }
+
+    /* Center and space out the EST FINISH text */
+    #task-sidebar p, .est-finish {
+        margin-top: 4vmin !important;
+        text-align: center;
+    }
+
+    /* 🚀 SCALE THE PLAY BUTTON AND ANY REMAINING ICONS */
+    .task-actions button img,
+    .task-actions img,
+    .play-btn img, /* Added just in case you named it this! */
+    .start-task-btn img {
+        width: 8vmin !important; 
+        height: auto !important;
+    }
+
+    /* 🚀 Properly scales the new Notes label on mobile */
+    .sidebar-notes-label {
+        font-size: 4.5vmin !important;
+        margin-bottom: 2vmin !important;
+    }
 }
+

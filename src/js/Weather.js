@@ -198,7 +198,7 @@ export async function setupWeather(world, env) {
         const totalSeconds = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
         renderEnvironment(totalSeconds / 86400);
         updateUI(); 
-    });
+    }, 1000);
 
     async function fetchLiveWeather() {
         const apiKey = import.meta.env.VITE_WEATHER_API_KEY; 

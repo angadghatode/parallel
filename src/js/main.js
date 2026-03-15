@@ -5,7 +5,6 @@ import { setupCharacter } from './Character.js';
 import { setupTimer } from './Timer.js';
 import { setupWeather } from './Weather.js';
 import { setupChatBubble } from './ChatBubble.js';
-import { Graphics } from 'pixi.js'; 
 
 (async () => {
     try {
@@ -49,54 +48,6 @@ import { Graphics } from 'pixi.js';
         const weatherControls = await setupWeather(world, env); 
         setupTimer(characterEngine, env, weatherControls);
 
-        /*
-        const coordText = new Text({ text: "0, 0", style: { fontSize: 16, fill: 'white', stroke: 'black', strokeThickness: 3 } });
-        coordText.zIndex = 10000; 
-        app.stage.addChild(coordText); 
-        
-        
-        // 🛠️ The magical drawing tool
-        const debugPathGfx = new Graphics();
-        debugPathGfx.zIndex = 9999; 
-        if (env && env.envContainer) env.envContainer.addChild(debugPathGfx);
-        let lastClickPos = null;
-
-        window.addEventListener('pointermove', (e) => {
-            if (env && env.envContainer) {
-                const localPos = env.envContainer.toLocal({ x: e.clientX, y: e.clientY });
-                coordText.text = `x: ${Math.round(localPos.x)}, y: ${Math.round(localPos.y)}`;
-                coordText.x = e.clientX + 15;
-                coordText.y = e.clientY + 15;
-            }
-        }); 
-
-
-        if (env && env.room) {
-            env.room.eventMode = 'static';
-            env.room.cursor = 'crosshair';
-            env.room.on('pointerdown', (e) => {
-                const localPos = env.envContainer.toLocal(e.global);
-                const rx = Math.round(localPos.x);
-                const ry = Math.round(localPos.y);
-                
-                // Draw a dot where you clicked
-                debugPathGfx.circle(rx, ry, 3).fill(0xff0000); 
-                
-                // Draw a line connecting it to the last click
-                if (lastClickPos) {
-                    debugPathGfx.moveTo(lastClickPos.x, lastClickPos.y);
-                    debugPathGfx.lineTo(rx, ry);
-                    debugPathGfx.stroke({ width: 2, color: 0xffffff, alpha: 0.5 });
-                }
-                lastClickPos = { x: rx, y: ry };
-
-                // Log it so you can copy-paste it into Character.js
-                console.log(`{ x: ${rx}, y: ${ry} },`);
-                
-                characterEngine.walkTo(rx, ry);
-            });
-        }*/
-
         app.ticker.add((ticker) => {
             characterEngine.update(ticker);
         });
@@ -108,16 +59,6 @@ import { Graphics } from 'pixi.js';
         }
         window.addEventListener('resize', resize);
         resize();
-
-        setTimeout(() => {
-            requestAnimationFrame(() => {
-                const loader = document.getElementById('loading-screen');
-                if (loader) loader.classList.add('hidden-loader');
-                
-                const ui = document.getElementById('ui-overlay');
-                if (ui) ui.style.opacity = '1';
-            });
-        }, 900);
 
         // --- DAILY SCHEDULE LOGIC ---
         function getScheduledState(hour, minute, engine) {
@@ -184,6 +125,19 @@ import { Graphics } from 'pixi.js';
             }
         }, 5000);
 
+        // 🚀 THE WAKE UP FIX: Instantly sync the room if the user switches back to this tab!
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !manualOverride) {
+                const current = new Date();
+                const expectedState = getScheduledState(current.getHours(), current.getMinutes(), characterEngine);
+                
+                // If Angad missed a schedule change while the tab was hidden, snap him there instantly!
+                if (characterEngine.getState() !== expectedState) {
+                    characterEngine.snapTo(expectedState, env, weatherControls);
+                }
+            }
+        });
+
     } catch (err) {
         console.error("Critical System Failure:", err);
         const loaderText = document.querySelector('.loading-text');
@@ -191,16 +145,15 @@ import { Graphics } from 'pixi.js';
     }
 
     setTimeout(() => {
-            requestAnimationFrame(() => {
-                const loader = document.getElementById('loading-screen');
-                if (loader) loader.classList.add('hidden-loader');
-                
-                const ui = document.getElementById('ui-overlay');
-                if (ui) ui.style.opacity = '1';
+        requestAnimationFrame(() => {
+            const loader = document.getElementById('loading-screen');
+            if (loader) loader.classList.add('hidden-loader');
+            
+            const ui = document.getElementById('ui-overlay');
+            if (ui) ui.style.opacity = '1';
 
-                // 🚀 THE WAKE UP CALL: 
-                // Force PixiJS to recalculate the world size now that the CSS is fully loaded
-                window.dispatchEvent(new Event('resize')); 
-            });
-        }, 900);
+            // Force PixiJS to recalculate the world size now that the CSS is fully loaded
+            window.dispatchEvent(new Event('resize')); 
+        });
+    }, 900);
 })();
