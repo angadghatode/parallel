@@ -187,7 +187,6 @@ button, input, #task-input-container, #speech-bubble {
     min-width: 250px;
     height: 100dvh;
     background: var(--ui-box);
-    border-left: 4px solid var(--ui-border);
     z-index: 100000;
     padding: 4vmin;
     box-sizing: border-box;
@@ -300,11 +299,6 @@ button, input, #task-input-container, #speech-bubble {
     margin-bottom: 2vmin;
 }
 
-/* Add this to your src/css/main.css */
-
-/* Summary Header & Spacing */
-/* src/css/main.css (Add to the bottom of your file) */
-
 .sidebar-header {
     padding-bottom: 1vmin;
     margin-top: 0;
@@ -383,6 +377,129 @@ button, input, #task-input-container, #speech-bubble {
     color: var(--ui-text-primary);
 }
 
+.drag-handle img {
+    pointer-events: none !important;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+/* --- THE CONTINUE POPUP MODAL --- */
+#continue-popup {
+    position: fixed !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: 85vw;
+    max-width: 450px;
+    z-index: 200000;
+    text-align: center;
+    box-sizing: border-box;
+    
+    /* 🚀 THE FIX: Increased the top padding (40px) to push the text down safely away from the X */
+    padding: 40px 24px 24px 24px; 
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    background: var(--ui-box);
+    border: 4px solid var(--ui-border);
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+/* 🚀 THE FIX: Pin the close button safely to the top right corner */
+#continue-popup .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transition: transform 0.1s;
+}
+
+#continue-popup .close-btn:active {
+    transform: scale(0.9);
+}
+
+#continue-popup .close-btn img {
+    width: 4vmin; /* Adjust this to make your X bigger or smaller */
+    height: auto;
+    image-rendering: pixelated;
+}
+
+#continue-popup p {
+    margin: 0;
+    font-size: clamp(16px, 2.5vmin, 20px);
+    line-height: 1.6;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    width: 100%;
+}
+
+#continue-popup div {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    margin-top: 10px !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- DEVICE SPECIFIC UI --- */
+
+/* DEFAULT (Desktop): Hide the arrows */
+.move-up-btn, .move-down-btn {
+    display: none !important;
+}
+
+@media (pointer: coarse) {
+    .move-up-btn, .move-down-btn {
+        display: inline-block !important;
+    }
+    .drag-handle {
+        display: none !important;
+    }
+    
+    /* 🚀 THE FIX: Force the play button to be a readable, tappable size on touch screens! */
+    .start-queued-btn img {
+        width: 6vmin !important; 
+        min-width: 35px !important; 
+    }
+
+    
+}
+
 
 
 
@@ -404,7 +521,7 @@ button, input, #task-input-container, #speech-bubble {
         position: absolute;
         top: 4vmin;
         left: 4vmin;
-        font-size: 10vmin; 
+        font-size: 8vmin; 
         color: var(--ui-text-primary);
         margin: 0;
         font-family: 'PixelFont3', sans-serif;
@@ -545,6 +662,24 @@ button, input, #task-input-container, #speech-bubble {
     .sidebar-notes-label {
         font-size: 3.5vmin !important;
         margin-bottom: 2vmin !important;
+    }
+
+    #continue-popup .close-btn img {
+        width: 5.5vmin; /* Adjust this to make your X bigger or smaller */
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    #continue-popup .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        transition: transform 0.1s;
     }
 }
 
@@ -706,6 +841,33 @@ button, input, #task-input-container, #speech-bubble {
     .sidebar-notes-label {
         font-size: 4.5vmin !important;
         margin-bottom: 2vmin !important;
+    }
+
+   #continue-popup {
+        width: 90vw;
+        padding: 40px 20px 20px 20px; /* Keep the top padding extra large for mobile too */
+    }
+    
+    #continue-popup div {
+        gap: 20px;
+    }
+
+    #continue-popup .close-btn img {
+        width: 10vmin; /* Adjust this to make your X bigger or smaller */
+        height: auto;
+        image-rendering: pixelated;
+    }
+
+    #continue-popup .close-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+        transition: transform 0.1s;
     }
 }
 

@@ -139,6 +139,11 @@ export function setupCharacter(world, textures, env) {
             } else if (newState === STATES.WORKING) {
                 currentLocation = 'DESK'; 
                 char.x = LOC.DESK.x; char.y = LOC.DESK.y;
+
+                if (char.textures !== animations['north_east']) {
+                    char.textures = animations['north_east'];
+                }
+
                 char.visible = true; // STAY VISIBLE!
                 char.gotoAndStop(0);
                 if (env.computer) { env.computer.visible = true; env.computer.gotoAndPlay(0); }
@@ -176,6 +181,11 @@ export function setupCharacter(world, textures, env) {
                 } 
                 else if (newState === STATES.WORKING && env.computer) { 
                     char.visible = true; // STAY VISIBLE!
+
+                    if (char.textures !== animations['north_east']) {
+                        char.textures = animations['north_east'];
+                    }
+                    
                     char.gotoAndStop(0);
                     env.computer.visible = true; env.computer.gotoAndPlay(0); 
                 } 

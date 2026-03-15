@@ -45,8 +45,6 @@
     opacity: 0.6;
 }
 
-
-
 #start-btn:active {
     transform: translateY(4px);
 }
@@ -71,6 +69,8 @@
 .img-btn:active {
     transform: translateY(4px);
 }
+
+
 
 @media (max-width: 1180px) {
     .time {
@@ -185,6 +185,8 @@
     .img-btn:active {
         transform: translateY(4px);
     }
+
+    
 }
 
 

@@ -46,6 +46,70 @@ import { setupChatBubble } from './ChatBubble.js';
         setupChatBubble();
         
         const weatherControls = await setupWeather(world, env); 
+
+        // --- 🎵 ADVANCED AUDIO ENGINE ---
+        
+        // 1. The Playlist
+        window.focusTracks = [
+            '/assets/focus-track-1.mp3', 
+            '/assets/focus-track-2.mp3', 
+            '/assets/focus-track-3.mp3'
+        ];
+        window.currentTrackIndex = Math.floor(Math.random() * window.focusTracks.length);
+        
+        // 2. Setup the Main Music Player
+        window.focusMusic = new Audio(window.focusTracks[window.currentTrackIndex]);
+        window.focusMusic.volume = 0; // Start at 0 so it can fade in!
+        
+        // Cycle to the next track when one finishes
+        window.focusMusic.addEventListener('ended', () => {
+            window.currentTrackIndex = (window.currentTrackIndex + 1) % window.focusTracks.length;
+            window.focusMusic.src = window.focusTracks[window.currentTrackIndex];
+            window.focusMusic.play().catch(() => {});
+        });
+
+        // 3. Setup the Ticking Clock
+        window.tickingAudio = new Audio('/assets/clock-ticking.mp3');
+        window.tickingAudio.loop = false;
+        window.tickingAudio.volume = 0; // Start at 0
+
+        // 4. The Global Fade Function
+        window.fadeAudio = (audio, targetVolume, durationMs) => {
+            if (!audio) return;
+            const steps = 20; 
+            const stepTime = durationMs / steps;
+            
+            // We track volume mathematically to bypass iOS hardware locks
+            let currentVol = audio.volume;
+            const volumeStep = (targetVolume - currentVol) / steps;
+            let currentStep = 0;
+            
+            clearInterval(audio.fadeInterval);
+            
+            // If we are fading UP and the audio is paused, start playing it silently first
+            if (targetVolume > 0 && audio.paused) {
+                audio.play().catch(e => console.log("Audio block:", e));
+            }
+            
+            audio.fadeInterval = setInterval(() => {
+                currentStep++;
+                currentVol += volumeStep;
+                
+                // We attempt to set the hardware volume (Works on desktop, fails silently on iOS)
+                audio.volume = Math.max(0, Math.min(1, currentVol));
+                
+                // We use our step counter to guarantee the pause command fires!
+                if (currentStep >= steps) {
+                    audio.volume = Math.max(0, Math.min(1, targetVolume));
+                    clearInterval(audio.fadeInterval);
+                    
+                    // Force the pause once the duration is complete
+                    if (targetVolume === 0) audio.pause();
+                }
+            }, stepTime);
+        };
+
+        // We pass the engines into setupTimer
         setupTimer(characterEngine, env, weatherControls);
 
         app.ticker.add((ticker) => {
@@ -79,6 +143,8 @@ import { setupChatBubble } from './ChatBubble.js';
         const startState = getScheduledState(now.getHours(), now.getMinutes(), characterEngine);
         characterEngine.snapTo(startState, env, weatherControls);
 
+
+        /*
         // --- GLOBAL DEBUG HOTKEYS ---
         let manualOverride = false;
         window.addEventListener('keydown', (e) => {
@@ -111,6 +177,7 @@ import { setupChatBubble } from './ChatBubble.js';
                 if (e.key === '0') characterEngine.command(characterEngine.STATES.WATCHING_TV, env, weatherControls);
             }
         });
+        */
 
         // --- AUTONOMOUS 24/7 ROUTINE CLOCK ---
         setInterval(() => {
@@ -152,7 +219,6 @@ import { setupChatBubble } from './ChatBubble.js';
             const ui = document.getElementById('ui-overlay');
             if (ui) ui.style.opacity = '1';
 
-            // Force PixiJS to recalculate the world size now that the CSS is fully loaded
             window.dispatchEvent(new Event('resize')); 
         });
     }, 900);

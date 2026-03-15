@@ -8,6 +8,7 @@ export function setupTimer(character, env, weatherControls) {
     const stopBtn = document.getElementById('button_stop');
     const timerDisplay = document.getElementById('timer-display');
     
+    const closePopupBtn = document.getElementById('popup-close-btn');
     const continuePopup = document.getElementById('continue-popup');
     const btnResume = document.getElementById('btn-resume-task');
     const btnNext = document.getElementById('btn-next-task');
@@ -24,7 +25,6 @@ export function setupTimer(character, env, weatherControls) {
     if (menuBtn && taskSidebar) menuBtn.addEventListener('click', () => taskSidebar.classList.add('active'));
     if (closeMenuBtn && taskSidebar) closeMenuBtn.addEventListener('click', () => taskSidebar.classList.remove('active'));
 
-    // --- INTEGRATED QUEUE INPUT LOGIC ---
     if (queueBtn && queueInputContainer && queueInput) {
         queueBtn.addEventListener('click', () => {
             queueBtn.style.display = 'none';
@@ -59,10 +59,8 @@ export function setupTimer(character, env, weatherControls) {
         });
     }
 
-    // --- EVENT DELEGATION FOR DELETE, PLAY, AND NOTES ---
     if (sidebarList) {
         sidebarList.addEventListener('click', (e) => {
-            // Delete Button Logic
             const delBtn = e.target.closest('.delete-task-btn');
             if (delBtn) {
                 const type = delBtn.getAttribute('data-type');
@@ -82,7 +80,6 @@ export function setupTimer(character, env, weatherControls) {
                 renderTaskLog();
             }
 
-            // 🚀 NEW: Play Button Logic for Queued Tasks
             const playBtn = e.target.closest('.start-queued-btn');
             if (playBtn) {
                 const index = playBtn.getAttribute('data-index');
@@ -91,14 +88,11 @@ export function setupTimer(character, env, weatherControls) {
                 if (queue[index]) {
                     const taskName = queue[index];
                     
-                    // Safely close out the current active task if there is one
                     completeActiveTask();
                     
-                    // Remove the task from the queue
                     queue.splice(index, 1);
                     localStorage.setItem('parallel_task_queue', JSON.stringify(queue));
                     
-                    // Set it as the new active task on the main screen
                     if (taskInput) taskInput.value = taskName;
                     localStorage.setItem('parallel_active_task', JSON.stringify({ 
                         id: Date.now().toString(), 
@@ -107,9 +101,35 @@ export function setupTimer(character, env, weatherControls) {
                         notes: "" 
                     }));
                     
-                    // Close the popup if it was open, and start the timer immediately!
                     if (continuePopup) continuePopup.style.display = 'none';
                     startFocusBlock();
+
+                    if (window.focusMusic) window.fadeAudio(window.focusMusic, 0.4, 2000);
+                }
+            }
+
+            // --- Mobile Fallback: Up / Down Arrows ---
+            const upBtn = e.target.closest('.move-up-btn');
+            if (upBtn) {
+                const idx = parseInt(upBtn.getAttribute('data-index'), 10);
+                const queue = JSON.parse(localStorage.getItem('parallel_task_queue') || '[]');
+                if (idx > 0) {
+                    // Swap with the item above
+                    [queue[idx - 1], queue[idx]] = [queue[idx], queue[idx - 1]];
+                    localStorage.setItem('parallel_task_queue', JSON.stringify(queue));
+                    renderTaskLog();
+                }
+            }
+
+            const downBtn = e.target.closest('.move-down-btn');
+            if (downBtn) {
+                const idx = parseInt(downBtn.getAttribute('data-index'), 10);
+                const queue = JSON.parse(localStorage.getItem('parallel_task_queue') || '[]');
+                if (idx < queue.length - 1) {
+                    // Swap with the item below
+                    [queue[idx + 1], queue[idx]] = [queue[idx], queue[idx + 1]];
+                    localStorage.setItem('parallel_task_queue', JSON.stringify(queue));
+                    renderTaskLog();
                 }
             }
         });
@@ -135,7 +155,6 @@ export function setupTimer(character, env, weatherControls) {
             }
         });
 
-        // --- DRAG AND DROP LOGIC ---
         sidebarList.addEventListener('dragstart', (e) => {
             const taskEl = e.target.closest('.sidebar-task');
             if (!taskEl) return;
@@ -250,7 +269,6 @@ export function setupTimer(character, env, weatherControls) {
             sidebarList.innerHTML = '<div class="empty-tasks">No tasks done</div>';
         }
 
-        // 1. THE HISTORY LOOP
         history.forEach((task, index) => {
             const taskDiv = document.createElement('div');
             taskDiv.className = 'sidebar-task';
@@ -271,7 +289,6 @@ export function setupTimer(character, env, weatherControls) {
             sidebarList.appendChild(taskDiv);
         });
 
-        // 2. THE ACTIVE TASK BLOCK
         if (activeTask) {
             const taskDiv = document.createElement('div');
             taskDiv.className = 'sidebar-task';
@@ -297,18 +314,22 @@ export function setupTimer(character, env, weatherControls) {
             taskDiv.dataset.type = 'queue';
             taskDiv.dataset.taskData = taskName;
             
-            // 🚀 UPDATED: Only show play button on the 1st item AND if there is NO active task
             let playBtnHtml = '';
             if (index === 0 && !activeTask) {
-                // Removed the extra margin-right so it groups perfectly with the other buttons!
                 playBtnHtml = `<button class="start-queued-btn" data-index="${index}" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center;"><img src="/assets/button.png" style="width: 3vmin; height: auto; image-rendering: pixelated;"></button>`;
             }
+
+            let moveBtnsHtml = `
+                <button class="move-up-btn" data-index="${index}" style="background: none; border: none; padding: 0 4px; cursor: pointer; color: var(--ui-text-secondary); font-size: 1.2rem;">▲</button>
+                <button class="move-down-btn" data-index="${index}" style="background: none; border: none; padding: 0 4px; cursor: pointer; color: var(--ui-text-secondary); font-size: 1.2rem;">▼</button>
+            `;
 
             taskDiv.innerHTML = `
                 <div class="task-title-row">
                     <div class="sidebar-task-title" style="color: var(--ui-text-secondary);">${listIndex++}. ${taskName}</div>
-                    <div class="task-actions">
+                    <div class="task-actions" style="display: flex; align-items: center;">
                         ${playBtnHtml}
+                        ${moveBtnsHtml}
                         <button class="drag-handle"><img src="/assets/button_rearrange.png"></button>
                         <button class="delete-task-btn" data-type="queue" data-index="${index}"><img src="/assets/button_bin.png"></button>
                     </div>
@@ -320,11 +341,17 @@ export function setupTimer(character, env, weatherControls) {
 
         calculateEstFinish();
     }
-
     function handleTimerComplete() {
-        clearInterval(timerInterval);
+        cancelAnimationFrame(timerInterval);
         localStorage.removeItem('parallel_timer_end');
         const mode = localStorage.getItem('parallel_timer_mode') || 'focus';
+
+        if (window.focusMusic) window.fadeAudio(window.focusMusic, 0, 2000);
+        
+        if (window.tickingAudio) {
+            window.tickingAudio.pause();
+            window.tickingAudio.currentTime = 0;
+        }
 
         if (mode === 'focus') {
             localStorage.setItem('parallel_timer_mode', 'break');
@@ -343,18 +370,34 @@ export function setupTimer(character, env, weatherControls) {
     }
 
     function runTimerCheck() {
-        clearInterval(timerInterval);
+        cancelAnimationFrame(timerInterval);
         const mode = localStorage.getItem('parallel_timer_mode') || 'focus';
         setUIState('running', mode);
-        
-        timerInterval = setInterval(() => {
+        window.endingTransitionStarted = false;
+
+        function checkTime() {
             const savedEndTime = localStorage.getItem('parallel_timer_end');
-            if (!savedEndTime) {
-                clearInterval(timerInterval);
-                return;
-            }
+            if (!savedEndTime) return;
 
             const timeLeft = parseInt(savedEndTime, 10) - Date.now();
+
+            if (timeLeft > 10000) {
+                window.endingTransitionStarted = false;
+            }
+
+            if (timeLeft <= 10000 && timeLeft > 0 && mode === 'focus') {
+                if (!window.endingTransitionStarted) {
+                    window.endingTransitionStarted = true;
+                    if (window.focusMusic) window.fadeAudio(window.focusMusic, 0, 4000);
+                    if (window.tickingAudio) {
+                        window.tickingAudio.currentTime = 0;
+                        window.tickingAudio.play().catch(() => {});
+                    }
+                }
+                if (window.tickingAudio) {
+                    window.tickingAudio.volume = Math.max(0.1, 1 - (timeLeft / 10000));
+                }
+            }
 
             if (timeLeft <= 0) {
                 handleTimerComplete();
@@ -362,9 +405,16 @@ export function setupTimer(character, env, weatherControls) {
                 const totalSecondsLeft = Math.floor(timeLeft / 1000);
                 const m = Math.floor(totalSecondsLeft / 60);
                 const s = totalSecondsLeft % 60;
-                if (timerDisplay) timerDisplay.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                const timeString = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+                if (timerDisplay && timerDisplay.innerText !== timeString) {
+                    timerDisplay.innerText = timeString;
+                }
+                timerInterval = requestAnimationFrame(checkTime);
             }
-        }, 1000);
+        }
+        
+        timerInterval = requestAnimationFrame(checkTime);
     }
 
     function startFocusBlock() {
@@ -391,6 +441,28 @@ export function setupTimer(character, env, weatherControls) {
         btnResume.addEventListener('click', () => {
             continuePopup.style.display = 'none';
             startFocusBlock();
+            if (window.focusMusic) window.fadeAudio(window.focusMusic, 0.4, 2000);
+        });
+    }
+
+    if (closePopupBtn) {
+        closePopupBtn.addEventListener('click', () => {
+            const continuePopup = document.getElementById('continue-popup');
+            const taskInput = document.getElementById('task-input');
+            const timerDisplay = document.getElementById('timer-display');
+
+            if (continuePopup) continuePopup.style.display = 'none';
+
+            completeActiveTask();
+
+            localStorage.removeItem('parallel_timer_mode');
+            localStorage.removeItem('parallel_timer_end');
+
+            if (taskInput) taskInput.value = "";
+            if (timerDisplay) timerDisplay.innerText = "25:00";
+
+            setUIState('idle', 'focus');
+            renderTaskLog();
         });
     }
 
@@ -412,6 +484,8 @@ export function setupTimer(character, env, weatherControls) {
                     notes: "" 
                 }));
                 startFocusBlock();
+
+                if (window.focusMusic) window.fadeAudio(window.focusMusic, 0.4, 2000);
             } else {
                 if (taskInput) taskInput.value = "";
                 renderTaskLog();
@@ -445,12 +519,14 @@ export function setupTimer(character, env, weatherControls) {
             localStorage.setItem('parallel_timer_mode', 'focus');
             runTimerCheck();
             renderTaskLog();
+
+            if (window.focusMusic) window.fadeAudio(window.focusMusic, 0.4, 2000);
         });
     }
 
     if (pauseBtn) {
         pauseBtn.addEventListener('click', () => {
-            clearInterval(timerInterval);
+            cancelAnimationFrame(timerInterval);
             const savedEndTime = localStorage.getItem('parallel_timer_end');
             if (savedEndTime) {
                 const timeLeft = parseInt(savedEndTime, 10) - Date.now();
@@ -460,12 +536,17 @@ export function setupTimer(character, env, weatherControls) {
             const mode = localStorage.getItem('parallel_timer_mode') || 'focus';
             setUIState('paused', mode);
             calculateEstFinish();
+
+            if (window.focusMusic) window.fadeAudio(window.focusMusic, 0, 2000);
+            if (window.tickingAudio) {
+                window.tickingAudio.pause();
+            }
         });
     }
 
     if (stopBtn) {
         stopBtn.addEventListener('click', () => {
-            clearInterval(timerInterval);
+            cancelAnimationFrame(timerInterval);
             localStorage.removeItem('parallel_timer_end');
             localStorage.removeItem('parallel_timer_paused_left');
             localStorage.removeItem('parallel_timer_mode');
@@ -477,6 +558,12 @@ export function setupTimer(character, env, weatherControls) {
             setUIState('idle', 'focus');
             if (continuePopup) continuePopup.style.display = 'none';
             renderTaskLog();
+
+            if (window.focusMusic) window.fadeAudio(window.focusMusic, 0, 2000);
+            if (window.tickingAudio) {
+                window.tickingAudio.pause();
+                window.tickingAudio.currentTime = 0;
+            }
         });
     }
 
