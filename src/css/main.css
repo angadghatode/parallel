@@ -3,6 +3,9 @@
 @import url('./weather.css');
 @import url('./chat.css');
 
+/* ==========================================================================
+   1. BASE STYLES & VARIABLES (LAPTOP / DESKTOP DEFAULT)
+   ========================================================================== */
 :root {
     --ui-box: #27262A;
     --ui-border: #CCC8C0;
@@ -15,21 +18,9 @@
     --sky-bottom: #2D263C; 
 }
 
-/* Make sure your fonts are inside your public/fonts/ folder! */
-@font-face {
-    font-family: 'PixelFont1'; 
-    src: url('/fonts/crang/Crang.ttf') format('truetype'); 
-}
-
-@font-face {
-    font-family: 'PixelFont2'; 
-    src: url('/fonts/pearsoda/PearSoda.ttf') format('truetype');
-}
-
-@font-face {
-    font-family: 'PixelFont3'; 
-    src: url('/fonts/qaaxee/Qaaxee.ttf') format('truetype');
-}
+@font-face { font-family: 'PixelFont1'; src: url('/fonts/crang/Crang.ttf') format('truetype'); }
+@font-face { font-family: 'PixelFont2'; src: url('/fonts/pearsoda/PearSoda.ttf') format('truetype'); }
+@font-face { font-family: 'PixelFont3'; src: url('/fonts/qaaxee/Qaaxee.ttf') format('truetype'); }
 
 * {
     box-shadow: none !important;
@@ -38,836 +29,211 @@
 }
 
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100dvh;
+    margin: 0; padding: 0;
+    width: 100vw; height: 100dvh;
     overflow: hidden;
     background-color: #0B0B1A;
-    font-family: 'PixelFont3', sans-serif; /* Forces global font */
-    color: var(--ui-text-primary); /* Forces global text color */
-    background: linear-gradient(
-        to bottom,
-        var(--sky-top) 0%, var(--sky-top) 25%,
-        var(--sky-mid1) 25%, var(--sky-mid1) 50%,
-        var(--sky-mid2) 50%, var(--sky-mid2) 75%,
-        var(--sky-bottom) 75%, var(--sky-bottom) 100%
-    );
+    font-family: 'PixelFont3', sans-serif;
+    color: var(--ui-text-primary);
+    background: linear-gradient( to bottom, var(--sky-top) 0%, var(--sky-top) 25%, var(--sky-mid1) 25%, var(--sky-mid1) 50%, var(--sky-mid2) 50%, var(--sky-mid2) 75%, var(--sky-bottom) 75%, var(--sky-bottom) 100% );
     position: relative; 
     transition: background 2s ease; 
     overscroll-behavior: none;
 }
 
 #app {
-    width: 100vw;
-    height: 100dvh;
-    max-width: none; /* Forces it to ignore any lingering Vite defaults! */
-    margin: 0;
-    padding: 0;
+    width: 100vw; height: 100dvh;
+    max-width: none; margin: 0; padding: 0;
     overflow: hidden;
 }
 
-#app-container {
-    position: relative;
-    width: 100vw;
-    height: 100dvh;
-}
+#app-container { position: relative; width: 100vw; height: 100dvh; }
 
 #pixi-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100dvh;
-    overflow: hidden;
-    z-index: 10; /* Sits behind the UI overlay */
+    position: absolute; top: 0; left: 0;
+    width: 100vw; height: 100dvh;
+    overflow: hidden; z-index: 10; 
 }
 
-/* 🚀 THE FIX: Force the HTML canvas to stretch to the container boundaries */
 #pixi-container canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    outline: none;
+    display: block; width: 100% !important; height: 100% !important; outline: none;
 }
 
 #ui-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 100000; 
-    pointer-events: none;
-    padding: 4vmin; 
+    position: absolute; inset: 0; z-index: 100000; pointer-events: none; padding: 4vmin; 
 }
 
 button, input, #task-input-container, #speech-bubble {
-    pointer-events: auto; 
-    font-family: 'PixelFont3', sans-serif; /* Force fonts on inputs */
+    pointer-events: auto; font-family: 'PixelFont3', sans-serif;
 }
 
 #title {
-    position: absolute;
-    top: 4vmin;
-    left: 4vmin;
-    font-size: 6vmin; 
-    color: var(--ui-text-primary);
-    margin: 0;
-    font-family: 'PixelFont3', sans-serif;
+    position: absolute; top: 4vmin; left: 4vmin;
+    font-size: 6vmin; color: var(--ui-text-primary);
+    margin: 0; font-family: 'PixelFont3', sans-serif;
     text-shadow: 4px 4px 0px var(--ui-box); 
 }
 
 /* --- LOADING SCREEN --- */
 #loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #0B0B1A; /* Matches your night sky */
-    color: var(--ui-text-primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999; /* Sits over the weather, UI, and Pixi */
-    transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh; background-color: #0B0B1A; color: var(--ui-text-primary);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 99999; transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
 }
+.loading-text { font-family: 'PixelFont3', sans-serif; font-size: 6vmin; text-shadow: 4px 4px 0px var(--ui-box); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+#loading-screen.hidden-loader { opacity: 0; visibility: hidden; }
 
-.loading-text {
-    font-family: 'PixelFont3', sans-serif;
-    font-size: 6vmin;
-    text-shadow: 4px 4px 0px var(--ui-box);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-/* JavaScript will add this class when everything is ready */
-#loading-screen.hidden-loader {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.ui-panel {
-    background: var(--ui-box);
-    border: 4px solid var(--ui-border);
-    padding: 2vmin;
-    margin-top: 2vmin;
-}
-
-.text-btn {
-    font-family: 'PixelFont3', sans-serif;
-    background: white;
-    color: var(--ui-box);
-    border: none;
-    padding: 0.5vmin 1vmin;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.text-btn:active {
-    transform: translateY(2px);
-}
-
-.task-item {
-    padding: 4px 0;
-    border-bottom: 2px dashed rgba(255,255,255,0.1);
-    display: flex;
-    justify-content: space-between;
-}
+/* --- UI ELEMENTS --- */
+.ui-panel { background: var(--ui-box); border: 4px solid var(--ui-border); padding: 2vmin; margin-top: 2vmin; }
+.text-btn { font-family: 'PixelFont3', sans-serif; background: white; color: var(--ui-box); border: none; padding: 0.5vmin 1vmin; cursor: pointer; font-weight: bold; }
+.text-btn:active { transform: translateY(2px); }
+.task-item { padding: 4px 0; border-bottom: 2px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
 
 /* --- SLIDING TASK SIDEBAR --- */
 #task-sidebar {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 35vmin;
-    min-width: 250px;
-    height: 100dvh;
-    background: var(--ui-box);
-    z-index: 100000;
-    padding: 4vmin;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    
-    /* Sliding Animation */
-    transform: translateX(100%);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-    pointer-events: auto; /* Allow clicking inside */
+    position: absolute; top: 0; right: 0;
+    width: 35vmin; min-width: 250px; height: 100dvh;
+    background: var(--ui-box); z-index: 100000; padding: 4vmin; box-sizing: border-box;
+    display: flex; flex-direction: column; overflow-y: auto;
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    pointer-events: auto;
 }
+#task-sidebar.active { transform: translateX(0); }
+#task-sidebar h2 { margin-top: 0; border-bottom: 2px solid var(--ui-border); padding-bottom: 1vmin; font-size: 3vmin; text-transform: uppercase; }
 
-/* Add this class via JS to slide it in */
-#task-sidebar.active {
-    transform: translateX(0);
-}
+.sidebar-task { margin-bottom: 3vmin; font-family: 'PixelFont3', sans-serif; border-bottom: 2px solid var(--ui-border); transition: transform 0.1s, opacity 0.1s;}
+.sidebar-task-title { font-size: 2.2vmin; font-weight: bold; color: var(--ui-text-primary); text-transform: uppercase; }
+.sidebar-task-times { font-size: 1.6vmin; color: var(--ui-text-secondary); margin: 1vmin 0; line-height: 1.4; }
+.sidebar-task-notes { width: 100%; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--ui-border); color: var(--ui-text-primary); font-family: 'PixelFont3', sans-serif; font-size: 1.6vmin; padding: 1vmin; box-sizing: border-box; resize: vertical; min-height: 8vmin; outline: none; margin-bottom: 3vmin; }
+.sidebar-task-notes:focus { background: rgba(255, 255, 255, 0.1); }
+.sidebar-notes-label { font-size: 1.5vmin; margin-bottom: 2px; font-family: 'PixelFont3', sans-serif; color: var(--ui-text-primary); }
 
-#task-sidebar h2 {
-    margin-top: 0;
-    border-bottom: 2px solid var(--ui-border);
-    padding-bottom: 1vmin;
-    font-size: 3vmin;
-    text-transform: uppercase;
-}
+#menu-btn { position: absolute; top: 4vmin; right: 4vmin; z-index: 10000; }
+#menu-btn img { width: 6vmin; height: auto; image-rendering: pixelated; }
 
-/* Individual Task Cards in the Sidebar */
-.sidebar-task {
-    margin-bottom: 3vmin;
-    font-family: 'PixelFont3', sans-serif;
-    border-bottom: 2px solid var(--ui-border);
-}
+#close-sidebar-btn { position: absolute; top: 2vmin; right: 2vmin; background: none !important; border: none !important; padding: 0 !important; z-index: 100003; cursor: pointer; }
+#close-sidebar-btn img { width: 5vmin; height: auto; image-rendering: pixelated; }
 
-.sidebar-task-title {
-    font-size: 2.2vmin;
-    font-weight: bold;
-    color: var(--ui-text-primary);
-    text-transform: uppercase;
-}
+#queue-btn:hover { background: rgba(255, 255, 255, 0.05) !important; color: var(--ui-text-primary) !important; border-color: var(--ui-text-primary) !important; }
+.empty-tasks { font-family: 'PixelFont3', sans-serif; color: var(--ui-text-secondary); font-size: 2vmin; text-align: center; margin-bottom: 2vmin; }
+.sidebar-header { padding-bottom: 1vmin; margin-top: 0; }
+.sidebar-header h2 { padding-bottom: 0; margin: 0; }
+#task-sidebar-list { margin-top: 3vmin; }
 
-.sidebar-task-times {
-    font-size: 1.6vmin;
-    color: var(--ui-text-secondary);
-    margin: 1vmin 0;
-    line-height: 1.4;
-}
+.task-title-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.task-actions { display: flex; gap: 1vmin; align-items: center; }
 
-.sidebar-task-notes {
-    width: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid var(--ui-border);
-    color: var(--ui-text-primary);
-    font-family: 'PixelFont3', sans-serif;
-    font-size: 1.6vmin;
-    padding: 1vmin;
-    box-sizing: border-box;
-    resize: vertical;
-    min-height: 8vmin;
-    outline: none;
-    margin-bottom: 3vmin;
-}
+.drag-handle, .delete-task-btn { background: none !important; border: none !important; cursor: pointer; padding: 0; display: flex; align-items: center; }
+.drag-handle img, .delete-task-btn img { width: 3vmin; height: auto; image-rendering: pixelated; }
+.delete-task-btn img { content: url('/assets/button_bin.png'); }
+.delete-task-btn:hover img { content: url('/assets/button_bin-red.png'); }
+.drag-handle { cursor: grab; }
+.drag-handle:active { cursor: grabbing; }
+.drag-handle img { pointer-events: none !important; -webkit-user-drag: none; -webkit-touch-callout: none; user-select: none; }
 
-.sidebar-task-notes:focus {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* --- MENU BUTTON --- */
-#menu-btn {
-    position: absolute;
-    top: 4vmin;
-    right: 4vmin;
-    z-index: 10000; /* Keeps it clickable above the sidebar */
-}
-
-#menu-btn img {
-    width: 6vmin; 
-    height: auto;
-    image-rendering: pixelated;
-}
-
-/* Add to src/css/main.css */
-#close-sidebar-btn {
-    position: absolute;
-    top: 2vmin;
-    right: 2vmin; /* 🚀 Placed cleanly in the top right corner of the menu */
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-    z-index: 100003;
-    cursor: pointer;
-}
-
-#close-sidebar-btn img {
-    width: 5vmin;
-    height: auto;
-    image-rendering: pixelated;
-}
-
-#queue-btn:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: var(--ui-text-primary) !important;
-    border-color: var(--ui-text-primary) !important;
-}
-
-.empty-tasks {
-    font-family: 'PixelFont3', sans-serif;
-    color: var(--ui-text-secondary);
-    font-size: 2vmin;
-    text-align: center;
-    margin-bottom: 2vmin;
-}
-
-.sidebar-header {
-    padding-bottom: 1vmin;
-    margin-top: 0;
-}
-
-.sidebar-header h2 {
-    padding-bottom: 0;
-    margin: 0;
-}
-
-#task-sidebar-list {
-    margin-top: 3vmin; 
-}
-
-/* Delete & Rearrange Buttons */
-.task-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.task-actions {
-    display: flex;
-    gap: 1vmin;
-    align-items: center;
-}
-
-.drag-handle, .delete-task-btn {
-    background: none !important;
-    border: none !important;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.drag-handle img, .delete-task-btn img {
-    width: 3vmin;
-    height: auto;
-    image-rendering: pixelated;
-}
-
-.delete-task-btn img {
-    content: url('/assets/button_bin.png'); 
-}
-
-.delete-task-btn:hover img {
-    content: url('/assets/button_bin-red.png'); 
-}
-
-.drag-handle {
-    cursor: grab;
-}
-
-.drag-handle:active {
-    cursor: grabbing;
-}
-
-/* Drag & Drop Visuals */
-.sidebar-task {
-    transition: transform 0.1s, opacity 0.1s;
-}
-
-.sidebar-task.dragging {
-    opacity: 0.5;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px dashed var(--ui-text-secondary);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    transform: scale(0.98);
-}
-
-.sidebar-notes-label {
-    font-size: 1.5vmin;
-    margin-bottom: 2px;
-    font-family: 'PixelFont3', sans-serif;
-    color: var(--ui-text-primary);
-}
-
-.drag-handle img {
-    pointer-events: none !important;
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-    user-select: none;
-}
+.sidebar-task.dragging { opacity: 0.5; background: rgba(255, 255, 255, 0.05); border: 2px dashed var(--ui-text-secondary); box-shadow: 0 10px 20px rgba(0,0,0,0.5); transform: scale(0.98); }
 
 /* --- THE CONTINUE POPUP MODAL --- */
 #continue-popup {
-    position: fixed !important;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) !important;
-    width: 85vw;
-    max-width: 450px;
-    z-index: 200000;
-    text-align: center;
-    box-sizing: border-box;
-    
-    /* 🚀 THE FIX: Increased the top padding (40px) to push the text down safely away from the X */
-    padding: 40px 24px 24px 24px; 
-    
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    background: var(--ui-box);
-    border: 4px solid var(--ui-border);
-    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.7);
+    position: fixed !important; top: 50%; left: 50%; transform: translate(-50%, -50%) !important;
+    width: 85vw; max-width: 450px; z-index: 200000; text-align: center; box-sizing: border-box;
+    padding: 40px 24px 24px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    background: var(--ui-box); border: 4px solid var(--ui-border); box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.7);
 }
+#continue-popup .close-btn { position: absolute; top: 5px; right: 5px; background: none; border: none; cursor: pointer; padding: 0; margin: 0; transition: transform 0.1s; }
+#continue-popup .close-btn:active { transform: scale(0.9); }
+#continue-popup .close-btn img { width: 4vmin; height: auto; image-rendering: pixelated; }
+#continue-popup p { margin: 0; font-size: clamp(16px, 2.5vmin, 20px); line-height: 1.6; white-space: normal; overflow-wrap: break-word; word-wrap: break-word; width: 100%; }
+#continue-popup div { display: flex; justify-content: center; gap: 30px; width: 100%; margin-top: 10px !important; }
 
-/* 🚀 THE FIX: Pin the close button safely to the top right corner */
-#continue-popup .close-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    transition: transform 0.1s;
+/* --- TIMER TOGGLE BUTTON --- */
+#timer-mode-btn {
+    background: transparent; border: none; font-family: 'PixelFont3', sans-serif;
+    font-size: 2.2vmin; color: var(--ui-text-secondary); cursor: pointer;
+    display: flex; justify-content: flex-end; align-items: center; gap: 1vmin; 
+    width: 100%; margin-bottom: 1vmin; transition: color 0.2s;
 }
+#timer-mode-btn:hover { color: var(--ui-text-primary); }
+#timer-mode-btn img { width: 5vmin; height: auto; image-rendering: pixelated; transition: transform 0.1s; }
+#timer-mode-btn:active img { transform: translateY(2px); }
 
-#continue-popup .close-btn:active {
-    transform: scale(0.9);
-}
-
-#continue-popup .close-btn img {
-    width: 4vmin; /* Adjust this to make your X bigger or smaller */
-    height: auto;
-    image-rendering: pixelated;
-}
-
-#continue-popup p {
-    margin: 0;
-    font-size: clamp(16px, 2.5vmin, 20px);
-    line-height: 1.6;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    width: 100%;
-}
-
-#continue-popup div {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    width: 100%;
-    margin-top: 10px !important;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- DEVICE SPECIFIC UI --- */
-
-/* DEFAULT (Desktop): Hide the arrows */
-.move-up-btn, .move-down-btn {
-    display: none !important;
-}
+/* ==========================================================================
+   2. TOUCH DEVICES (SYSTEM SPECIFIC)
+   ========================================================================== */
+.move-up-btn, .move-down-btn { display: none !important; } /* Hidden on desktop */
 
 @media (pointer: coarse) {
-    .move-up-btn, .move-down-btn {
-        display: inline-block !important;
-    }
-    .drag-handle {
-        display: none !important;
-    }
-    
-    /* 🚀 THE FIX: Force the play button to be a readable, tappable size on touch screens! */
-    .start-queued-btn img {
-        width: 6vmin !important; 
-        min-width: 35px !important; 
-    }
-
-    
+    .move-up-btn, .move-down-btn { display: inline-block !important; }
+    .drag-handle { display: none !important; }
+    .start-queued-btn img { width: 6vmin !important; min-width: 35px !important; }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* ==========================================================================
+   3. TABLET / IPAD VIEW
+   ========================================================================== */
 @media (max-width: 1180px) {
-    #title {
-        position: absolute;
-        top: 4vmin;
-        left: 4vmin;
-        font-size: 8vmin; 
-        color: var(--ui-text-primary);
-        margin: 0;
-        font-family: 'PixelFont3', sans-serif;
-        text-shadow: 4px 4px 0px var(--ui-box); 
-    }
+    #title { font-size: 8vmin; }
+    #menu-btn img { width: 8vmin; }
 
-    #menu-btn {
-        position: absolute;
-        top: 4vmin;
-        right: 4vmin;
-        z-index: 10000; 
-    }
-
-    #menu-btn img {
-        width: 8vmin; 
-        height: auto;
-        image-rendering: pixelated;
-    }
-
-    /* 🚀 THE FULL SCREEN TASK SIDEBAR (Fixed ID!) */
-    #task-sidebar {
-        width: 70dvh !important;
-        max-width: 100dvh !important;
-        height: 100dvh !important;
-        right: 0 !important;
-        top: 0 !important;
-        box-sizing: border-box !important;
-        border-radius: 0 !important;
-        padding: 8vmin !important;
-        background-color: var(--ui-box); 
-        z-index: 100002; 
-    }
-
-    /* Boosts headers inside the sidebar ("TASK SUMMARY") */
-    #task-sidebar h2, 
-    .sidebar-header h2 {
-        font-size: 6vmin !important;
-        margin-bottom: 4vmin !important;
-    }
-
-    /* 🚀 TARGETED TASK ITEM SCALING */
-    .sidebar-task-title {
-        font-size: 5vmin !important; /* Makes the task name massive */
-    }
-
-    .sidebar-task-times {
-        font-size: 3vmin !important; /* Makes the timestamps readable */
-        margin: 2vmin 0 !important;
-    }
-
-    .sidebar-task-notes {
-        font-size: 3vmin !important;
-        min-height: 15vh !important;
-        padding: 3vmin !important;
-    }
-
-    /* 🚀 SCALES THE REARRANGE AND DELETE BUTTONS */
-    .drag-handle img, 
-    .delete-task-btn img {
-        width: 6vmin !important; /* Doubles the size of the tiny icons */
-        height: auto;
-    }
-
-    #close-sidebar-btn {
-        position: absolute;
-        top: 4vmin !important;   
-        right: 4vmin !important; 
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        z-index: 100003;
-        cursor: pointer;
-    }
-
-    #close-sidebar-btn img {
-        width: 8vmin !important; 
-        height: auto;
-        image-rendering: pixelated;
-    }
-
-    .empty-tasks {
-        font-family: 'PixelFont3', sans-serif;
-        color: var(--ui-text-secondary);
-        font-size: 4.5vmin !important; 
-        text-align: center;
-        margin-bottom: 4vmin !important;
-    }
-
-    /* Expands the input and textarea for mobile typing */
-    #task-sidebar textarea,
-    #task-sidebar input {
-        width: 100% !important;
-        box-sizing: border-box;
-    }
-
-    /* Makes the queue button massive and easy to hit */
-    #queue-btn {
-        width: 100% !important;
-        padding: 4vmin !important;
-        font-size: 5vmin !important;
-        margin-top: 4vmin !important;
-    }
-
-    #queue-btn:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: var(--ui-text-primary) !important;
-        border-color: var(--ui-text-primary) !important;
-    }
-
-    #task-sidebar label,
-    #task-sidebar p,
-    #task-sidebar span,
-    .est-finish {
-        font-size: 4vmin !important;
-        display: block; /* Ensures they space out correctly */
-    }
-
-    #task-sidebar label {
-        margin-bottom: 2vmin !important;
-    }
-
-    /* Center and space out the EST FINISH text */
-    #task-sidebar p, .est-finish {
-        margin-top: 4vmin !important;
-        text-align: center;
-    }
-
-    .mobile-label,
-    #task-sidebar strong, 
-    #task-sidebar h3, 
-    #task-sidebar h4 {
-        font-size: 4.5vmin !important;
-        margin-bottom: 2vmin !important;
-        display: block !important;
-        color: var(--ui-text-primary) !important;
-    }
-
-    .sidebar-notes-label {
-        font-size: 3.5vmin !important;
-        margin-bottom: 2vmin !important;
-    }
-
-    #continue-popup .close-btn img {
-        width: 5.5vmin; /* Adjust this to make your X bigger or smaller */
-        height: auto;
-        image-rendering: pixelated;
-    }
-
-    #continue-popup .close-btn {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        margin: 0;
-        transition: transform 0.1s;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-@media (max-width: 950px) {
-    #title {
-        position: absolute;
-        top: 4vmin;
-        left: 4vmin;
-        font-size: 10vmin; 
-        color: var(--ui-text-primary);
-        margin: 0;
-        font-family: 'PixelFont3', sans-serif;
-        text-shadow: 4px 4px 0px var(--ui-box); 
-    }
-
-    #menu-btn {
-        position: absolute;
-        top: 4vmin;
-        right: 4vmin;
-        z-index: 10000; 
-    }
-
-    #menu-btn img {
-        width: 11vmin; 
-        height: auto;
-        image-rendering: pixelated;
-    }
-
-    /* 🚀 THE FULL SCREEN TASK SIDEBAR (Fixed ID!) */
-    #task-sidebar {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: 100dvh !important;
-        right: 0 !important;
-        top: 0 !important;
-        box-sizing: border-box !important;
-        border-radius: 0 !important;
-        padding: 8vmin !important;
-        background-color: var(--ui-box); 
-        z-index: 100002; 
-    }
-
-    /* Boosts headers inside the sidebar ("TASK SUMMARY") */
-    #task-sidebar h2, 
-    .sidebar-header h2 {
-        font-size: 8vmin !important;
-        margin-bottom: 4vmin !important;
-    }
-
-    /* 🚀 TARGETED TASK ITEM SCALING */
-    .sidebar-task-title {
-        font-size: 5vmin !important; /* Makes the task name massive */
-    }
-
-    .sidebar-task-times {
-        font-size: 4vmin !important; /* Makes the timestamps readable */
-        margin: 2vmin 0 !important;
-    }
-
-    .sidebar-task-notes {
-        font-size: 4vmin !important;
-        min-height: 15vh !important;
-        padding: 3vmin !important;
-    }
-
-    /* 🚀 SCALES THE REARRANGE AND DELETE BUTTONS */
-    .drag-handle img, 
-    .delete-task-btn img {
-        width: 6vmin !important; /* Doubles the size of the tiny icons */
-        height: auto;
-    }
-
-    #close-sidebar-btn {
-        position: absolute;
-        top: 4vmin !important;   
-        right: 4vmin !important; 
-        background: none !important;
-        border: none !important;
-        padding: 0 !important;
-        z-index: 100003;
-        cursor: pointer;
-    }
-
-    #close-sidebar-btn img {
-        width: 8vmin !important; 
-        height: auto;
-        image-rendering: pixelated;
-    }
-
-    .empty-tasks {
-        font-family: 'PixelFont3', sans-serif;
-        color: var(--ui-text-secondary);
-        font-size: 4.5vmin !important; 
-        text-align: center;
-        margin-bottom: 4vmin !important;
-    }
-
-    /* Expands the input and textarea for mobile typing */
-    #task-sidebar textarea,
-    #task-sidebar input {
-        width: 100% !important;
-        box-sizing: border-box;
-    }
-
-    /* Makes the queue button massive and easy to hit */
-    #queue-btn {
-        width: 100% !important;
-        padding: 4vmin !important;
-        font-size: 5vmin !important;
-        margin-top: 4vmin !important;
-    }
-
-    #queue-btn:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: var(--ui-text-primary) !important;
-        border-color: var(--ui-text-primary) !important;
-    }
-
-    #task-sidebar label,
-    #task-sidebar p,
-    #task-sidebar span,
-    .est-finish {
-        font-size: 4vmin !important;
-        display: block; /* Ensures they space out correctly */
-    }
-
-    #task-sidebar label {
-        margin-bottom: 2vmin !important;
-    }
-
-    /* Center and space out the EST FINISH text */
-    #task-sidebar p, .est-finish {
-        margin-top: 4vmin !important;
-        text-align: center;
-    }
-
-    /* 🚀 SCALE THE PLAY BUTTON AND ANY REMAINING ICONS */
-    .task-actions button img,
-    .task-actions img,
-    .play-btn img, /* Added just in case you named it this! */
-    .start-task-btn img {
-        width: 8vmin !important; 
-        height: auto !important;
-    }
-
-    /* 🚀 Properly scales the new Notes label on mobile */
-    .sidebar-notes-label {
-        font-size: 4.5vmin !important;
-        margin-bottom: 2vmin !important;
-    }
-
-   #continue-popup {
-        width: 90vw;
-        padding: 40px 20px 20px 20px; /* Keep the top padding extra large for mobile too */
-    }
+    #task-sidebar { width: 70dvh !important; max-width: 100dvh !important; padding: 8vmin !important; border-radius: 0 !important; z-index: 100002; }
+    #task-sidebar h2, .sidebar-header h2 { font-size: 6vmin !important; margin-bottom: 4vmin !important; }
+    .sidebar-task-title { font-size: 5vmin !important; }
+    .sidebar-task-times { font-size: 3vmin !important; margin: 2vmin 0 !important; }
+    .sidebar-task-notes { font-size: 3vmin !important; min-height: 15vh !important; padding: 3vmin !important; }
+    .sidebar-notes-label { font-size: 3.5vmin !important; margin-bottom: 2vmin !important; }
     
-    #continue-popup div {
-        gap: 20px;
-    }
+    .drag-handle img, .delete-task-btn img { width: 6vmin !important; }
+    #close-sidebar-btn { top: 4vmin !important; right: 4vmin !important; }
+    #close-sidebar-btn img { width: 8vmin !important; }
+    .empty-tasks { font-size: 4.5vmin !important; margin-bottom: 4vmin !important; }
 
-    #continue-popup .close-btn img {
-        width: 10vmin; /* Adjust this to make your X bigger or smaller */
-        height: auto;
-        image-rendering: pixelated;
-    }
+    #task-sidebar textarea, #task-sidebar input { width: 100% !important; box-sizing: border-box; }
+    #queue-btn { width: 100% !important; padding: 4vmin !important; font-size: 5vmin !important; margin-top: 4vmin !important; }
+    
+    #task-sidebar label, #task-sidebar p, #task-sidebar span, .est-finish { font-size: 4vmin !important; display: block; }
+    #task-sidebar p, .est-finish { margin-top: 4vmin !important; }
+    .mobile-label, #task-sidebar strong, #task-sidebar h3, #task-sidebar h4 { font-size: 4.5vmin !important; margin-bottom: 2vmin !important; display: block !important; color: var(--ui-text-primary) !important; }
 
-    #continue-popup .close-btn {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        margin: 0;
-        transition: transform 0.1s;
-    }
+    #continue-popup .close-btn img { width: 5.5vmin; }
+
+    #timer-mode-btn { font-size: 3vmin; gap: 2vmin; }
+    #timer-mode-btn img { width: 8vmin; }
+    .cloud-img { min-width: 30vw !important; }
 }
 
+/* ==========================================================================
+   4. MOBILE PORTRAIT (PHONES VERTICAL)
+   ========================================================================== */
+@media (max-width: 900px) {
+    #title { font-size: 10vmin; }
+    #menu-btn img { width: 11vmin; }
+
+    #task-sidebar { width: 100vw !important; max-width: 100vw !important; }
+    #task-sidebar h2, .sidebar-header h2 { font-size: 8vmin !important; }
+    .sidebar-task-times, .sidebar-task-notes { font-size: 4vmin !important; }
+    .sidebar-notes-label { font-size: 4.5vmin !important; }
+    
+    #close-sidebar-btn img { width: 8vmin !important; }
+    .task-actions button img, .task-actions img, .play-btn img, .start-task-btn img { width: 8vmin !important; height: auto !important; }
+
+    #continue-popup { width: 90vw; padding: 40px 20px 20px 20px; }
+    #continue-popup .close-btn img { width: 10vmin; }
+    
+    #timer-mode-btn { font-size: 3.5vmin; }
+    #timer-mode-btn img { width: 10vmin; }
+    .cloud-img { min-width: 35vw !important; transform: translateY(10vh) !important; }
+}
+
+/* ==========================================================================
+   5. MOBILE LANDSCAPE (PHONES HORIZONTAL)
+   ========================================================================== */
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    /* Push massive clouds down into the frame */
+    .cloud-img { min-width: 20vw !important; transform: translateY(10vh) !important; }
+    
+    /* Ensure the sidebar doesn't look ridiculous horizontally */
+    #task-sidebar { width: 60vw !important; }
+    #timer-mode-btn img { width: 6vmin; }
+}

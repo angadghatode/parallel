@@ -29,23 +29,52 @@ export async function setupWeather(world, env) {
         }
     }
 
+    // --- ☁️ NEW DYNAMIC CLOUD LOGIC ---
     if (cloudLayer && cloudLayer.children.length === 0) {
+        // Ensure the parent layer is always visible now
+        cloudLayer.style.opacity = '1'; 
+        
         const cloudImages = ['/assets/cloud.png', '/assets/cloud2.png']; 
-        for (let i = 0; i < 6; i++) {
+        
+        // Generate 12 clouds total (4 base, 8 extra for cloudy days)
+        for (let i = 0; i < 12; i++) {
             const wrapper = document.createElement('div');
             wrapper.classList.add('cloud-wrapper');
+            
+            // Tag the extra clouds so we can hide/show them later
+            if (i >= 4) wrapper.classList.add('extra-cloud'); 
+            
             wrapper.style.top = `${Math.random() * 30}vh`; 
             wrapper.style.animationDuration = `${Math.random() * 80 + 40}s`; 
             wrapper.style.animationDelay = `-${Math.random() * 80}s`; 
+            wrapper.style.transition = 'opacity 3s ease'; // Smooth fade in/out
 
             const img = document.createElement('img');
             img.classList.add('cloud-img');
             img.src = cloudImages[Math.floor(Math.random() * cloudImages.length)];
             img.style.width = `${Math.random() * 15 + 10}vw`;
+            img.style.transition = 'filter 3s ease'; // Smooth color changing
             if (Math.random() > 0.5) img.style.transform = 'scaleX(-1)';
             
             wrapper.appendChild(img);
             cloudLayer.appendChild(wrapper);
+        }
+    }
+
+    // Helper function to shift cloud visuals smoothly
+    function updateCloudVisuals(isCloudy) {
+        if (!cloudLayer) return;
+        const extraClouds = cloudLayer.querySelectorAll('.extra-cloud');
+        const allCloudImgs = cloudLayer.querySelectorAll('.cloud-img');
+
+        if (isCloudy) {
+            // Fade in extra clouds, turn them all dark/grey
+            extraClouds.forEach(c => c.style.opacity = '1');
+            allCloudImgs.forEach(img => img.style.filter = 'brightness(0.6) grayscale(0.5)');
+        } else {
+            // Hide extra clouds, return base clouds to bright white
+            extraClouds.forEach(c => c.style.opacity = '0');
+            allCloudImgs.forEach(img => img.style.filter = 'brightness(1) grayscale(0)');
         }
     }
 
@@ -210,7 +239,10 @@ export async function setupWeather(world, env) {
             isClearSky = (id === 800);
 
             if (weatherLayer) weatherLayer.style.opacity = (id >= 200 && id < 600) ? '1' : '0';
-            if (cloudLayer) cloudLayer.style.opacity = (id >= 801 && id <= 804) ? '1' : '0';
+            
+            // Trigger the new cloud visualizer based on the live weather ID
+            const isCloudyOrRain = (id >= 801 && id <= 804) || (id >= 200 && id < 600);
+            updateCloudVisuals(isCloudyOrRain);
             
             latestWeatherString = `${data.weather[0].main} | ${Math.round(data.main.temp)}°C`;
             isWeatherLoaded = true; 
@@ -236,16 +268,16 @@ export async function setupWeather(world, env) {
         forceWeather: (type) => {
             if (type === 'clear') {
                 isClearSky = true; 
-                if (cloudLayer) cloudLayer.style.opacity = '0'; 
                 if (weatherLayer) weatherLayer.style.opacity = '0';
+                updateCloudVisuals(false); // Clean white base clouds
             } else if (type === 'cloudy') {
                 isClearSky = false; 
-                if (cloudLayer) cloudLayer.style.opacity = '1'; 
                 if (weatherLayer) weatherLayer.style.opacity = '0';
+                updateCloudVisuals(true); // Lots of grey clouds
             } else if (type === 'rain') {
                 isClearSky = false; 
-                if (cloudLayer) cloudLayer.style.opacity = '1'; 
                 if (weatherLayer) weatherLayer.style.opacity = '1';
+                updateCloudVisuals(true); // Lots of grey clouds
             }
             triggerInstantRender();
         }
