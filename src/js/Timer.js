@@ -7,7 +7,7 @@ export function setupTimer(character, env, weatherControls) {
     const pauseBtn = document.getElementById('button_pause');
     const stopBtn = document.getElementById('button_stop');
     const timerDisplay = document.getElementById('timer-display');
-    const timerModeBtn = document.getElementById('timer-mode-btn'); // 🚀 NEW BUTTON
+    const timerModeBtn = document.getElementById('timer-mode-btn'); 
     
     const closePopupBtn = document.getElementById('popup-close-btn');
     const continuePopup = document.getElementById('continue-popup');
@@ -27,7 +27,6 @@ export function setupTimer(character, env, weatherControls) {
     let currentTimerType = localStorage.getItem('parallel_timer_type') || 'pomodoro_25';
     
     function updateTimerModeUI() {
-        // 🚀 Target just the text span so the image doesn't get deleted!
         const modeLabel = document.getElementById('timer-mode-label'); 
         
         if (currentTimerType === 'pomodoro_25') {
@@ -44,7 +43,6 @@ export function setupTimer(character, env, weatherControls) {
 
     if (timerModeBtn) {
         timerModeBtn.addEventListener('click', () => {
-            // Only allow switching if the timer is stopped
             if (startBtn.style.display === 'none') return; 
 
             if (currentTimerType === 'pomodoro_25') currentTimerType = 'pomodoro_50';
@@ -142,7 +140,6 @@ export function setupTimer(character, env, weatherControls) {
                 }
             }
 
-            // --- Mobile Fallback: Up / Down Arrows ---
             const upBtn = e.target.closest('.move-up-btn');
             if (upBtn) {
                 const idx = parseInt(upBtn.getAttribute('data-index'), 10);
@@ -396,7 +393,7 @@ export function setupTimer(character, env, weatherControls) {
         else if (mode === 'break') {
             localStorage.setItem('parallel_timer_mode', 'focus');
             setUIState('idle', 'focus');
-            updateTimerModeUI(); // 🚀 Renders original selection correctly
+            updateTimerModeUI(); 
             if (continuePopup) continuePopup.style.display = 'block';
             renderTaskLog();
         }
@@ -447,15 +444,19 @@ export function setupTimer(character, env, weatherControls) {
                     timerInterval = requestAnimationFrame(checkTime);
                 }
             } else {
-                // STOPWATCH LOGIC (Count Up)
                 const savedStartTime = localStorage.getItem('parallel_timer_start');
                 if (!savedStartTime) return;
                 
                 const elapsed = Date.now() - parseInt(savedStartTime, 10);
                 const totalSecondsElapsed = Math.floor(elapsed / 1000);
-                const m = Math.floor(totalSecondsElapsed / 60);
+                
+                const h = Math.floor(totalSecondsElapsed / 3600);
+                const m = Math.floor((totalSecondsElapsed % 3600) / 60);
                 const s = totalSecondsElapsed % 60;
-                const timeString = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                
+                const timeString = h > 0 
+                    ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+                    : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 
                 if (timerDisplay && timerDisplay.innerText !== timeString) {
                     timerDisplay.innerText = timeString;
@@ -513,7 +514,7 @@ export function setupTimer(character, env, weatherControls) {
             localStorage.removeItem('parallel_timer_start');
 
             if (taskInput) taskInput.value = "";
-            updateTimerModeUI(); // 🚀 Cleanly resets text based on type
+            updateTimerModeUI(); 
 
             setUIState('idle', 'focus');
             renderTaskLog();
@@ -635,7 +636,7 @@ export function setupTimer(character, env, weatherControls) {
             
             completeActiveTask();
             
-            updateTimerModeUI(); // 🚀 Cleanly resets text to default for the selected mode
+            updateTimerModeUI(); 
             if (taskInput) taskInput.value = "";
             setUIState('idle', 'focus');
             if (continuePopup) continuePopup.style.display = 'none';
@@ -655,6 +656,7 @@ export function setupTimer(character, env, weatherControls) {
     const pausedTimer = localStorage.getItem('parallel_timer_paused_left');
     const pausedStopwatch = localStorage.getItem('parallel_timer_paused_elapsed');
     const mode = localStorage.getItem('parallel_timer_mode') || 'focus';
+    const modeLabel = document.getElementById('timer-mode-label');
 
     if (currentTimerType.startsWith('pomodoro')) {
         if (existingTimer) {
@@ -662,8 +664,7 @@ export function setupTimer(character, env, weatherControls) {
             if (timeLeft > 0) {
                 const activeStr = localStorage.getItem('parallel_active_task');
                 if (taskInput && activeStr) taskInput.value = JSON.parse(activeStr).name;
-                // Force button UI update without overwriting the ticking text
-                if (timerModeBtn) timerModeBtn.innerText = currentTimerType === 'pomodoro_25' ? "25 MIN" : "50 MIN";
+                if (modeLabel) modeLabel.innerText = currentTimerType === 'pomodoro_25' ? "25 MIN POMODORO" : "50 MIN POMODORO";
                 runTimerCheck();
             } else {
                 handleTimerComplete();
@@ -672,7 +673,7 @@ export function setupTimer(character, env, weatherControls) {
             const activeStr = localStorage.getItem('parallel_active_task');
             if (taskInput && activeStr) taskInput.value = JSON.parse(activeStr).name;
             const totalSecondsLeft = Math.floor(parseInt(pausedTimer, 10) / 1000);
-            if (timerModeBtn) timerModeBtn.innerText = currentTimerType === 'pomodoro_25' ? "25 MIN" : "50 MIN";
+            if (modeLabel) modeLabel.innerText = currentTimerType === 'pomodoro_25' ? "25 MIN POMODORO" : "50 MIN POMODORO";
             if (timerDisplay) timerDisplay.innerText = `${Math.floor(totalSecondsLeft / 60).toString().padStart(2, '0')}:${(totalSecondsLeft % 60).toString().padStart(2, '0')}`;
             setUIState('paused', mode);
         } else {
@@ -680,18 +681,27 @@ export function setupTimer(character, env, weatherControls) {
             setUIState('idle', 'focus');
         }
     } else {
-        // Stopwatch Restore Logic
         if (existingStopwatch) {
             const activeStr = localStorage.getItem('parallel_active_task');
             if (taskInput && activeStr) taskInput.value = JSON.parse(activeStr).name;
-            if (timerModeBtn) timerModeBtn.innerText = "STOPWATCH ";
+            if (modeLabel) modeLabel.innerText = "STOPWATCH";
             runTimerCheck();
         } else if (pausedStopwatch) {
             const activeStr = localStorage.getItem('parallel_active_task');
             if (taskInput && activeStr) taskInput.value = JSON.parse(activeStr).name;
+            
             const totalSecondsElapsed = Math.floor(parseInt(pausedStopwatch, 10) / 1000);
-            if (timerModeBtn) timerModeBtn.innerText = "STOPWATCH ";
-            if (timerDisplay) timerDisplay.innerText = `${Math.floor(totalSecondsElapsed / 60).toString().padStart(2, '0')}:${(totalSecondsElapsed % 60).toString().padStart(2, '0')}`;
+            
+            const h = Math.floor(totalSecondsElapsed / 3600);
+            const m = Math.floor((totalSecondsElapsed % 3600) / 60);
+            const s = totalSecondsElapsed % 60;
+            
+            const timeString = h > 0 
+                ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+                : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+            if (modeLabel) modeLabel.innerText = "STOPWATCH";
+            if (timerDisplay) timerDisplay.innerText = timeString;
             setUIState('paused', mode);
         } else {
             updateTimerModeUI();

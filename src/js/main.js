@@ -234,4 +234,23 @@ import { createClient } from '@supabase/supabase-js';
             window.dispatchEvent(new Event('resize')); 
         });
     }, 900);
+
+    // --- POPUP WIRING ---
+        const betaTag = document.getElementById('beta-tag');
+        const betaPopup = document.getElementById('beta-popup');
+        const betaClose = document.getElementById('beta-close-btn');
+
+        const loginBtn = document.getElementById('sidebar-login-btn');
+        const loginPopup = document.getElementById('login-popup');
+        const loginClose = document.getElementById('login-close-btn');
+
+        if(betaTag && betaPopup) {
+            betaTag.addEventListener('click', () => betaPopup.style.display = 'flex');
+            betaClose.addEventListener('click', () => betaPopup.style.display = 'none');
+        }
+
+        if(loginBtn && loginPopup) {
+            loginBtn.addEventListener('click', () => loginPopup.style.display = 'flex');
+            loginClose.addEventListener('click', () => loginPopup.style.display = 'none');
+        }
 })();

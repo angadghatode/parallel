@@ -10,7 +10,7 @@
     --ui-box: #27262A;
     --ui-border: #CCC8C0;
     --ui-text-primary: #F3E2B4;
-    --ui-text-secondary: #A09B9A;
+    --ui-text-secondary: #E0DDD5;
 
     --sky-top: #0B0B1A; 
     --sky-mid1: #1c142c;
@@ -154,10 +154,73 @@ button, input, #task-input-container, #speech-bubble {
     font-size: 2.2vmin; color: var(--ui-text-secondary); cursor: pointer;
     display: flex; justify-content: flex-end; align-items: center; gap: 1vmin; 
     width: 100%; margin-bottom: 1vmin; transition: color 0.2s;
+    text-shadow: 2px 2px 0px var(--ui-box);
 }
 #timer-mode-btn:hover { color: var(--ui-text-primary); }
 #timer-mode-btn img { width: 5vmin; height: auto; image-rendering: pixelated; transition: transform 0.1s; }
 #timer-mode-btn:active img { transform: translateY(2px); }
+
+
+/* --- BETA TAG --- */
+#beta-tag {
+    font-size: 3vmin;
+    background: #FFB800; /* Cool retro yellow */
+    color: #0B0B1A;
+    padding: 0.2vmin 1vmin;
+    border-radius: 4px;
+    vertical-align: super;
+    cursor: pointer;
+    text-shadow: none; /* Removes the heavy shadow from the title */
+    transition: transform 0.1s;
+    display: inline-block;
+    margin-left: 1vmin;
+}
+#beta-tag:active { transform: scale(0.9); }
+
+/* --- SIDEBAR LOGIN BUTTON --- */
+#sidebar-login-btn {
+    margin-top: auto; /* Magically pushes it to the bottom of the flex sidebar */
+    padding: 2vmin;
+    font-size: 2.5vmin;
+    background: var(--ui-text-primary);
+    color: var(--ui-box);
+    border: none;
+    cursor: pointer;
+    font-family: 'PixelFont3', sans-serif;
+    transition: transform 0.1s, background 0.2s;
+}
+#sidebar-login-btn:active { transform: translateY(2px); }
+
+/* --- SHARED PIXEL MODAL (Based on the continue-popup) --- */
+.pixel-modal {
+    position: fixed !important;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) !important;
+    width: 85vw; max-width: 450px;
+    z-index: 200000; text-align: center; box-sizing: border-box;
+    padding: 40px 24px 24px 24px;
+    flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+    background: var(--ui-box); border: 4px solid var(--ui-border); box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.7);
+}
+.pixel-modal .close-btn {
+    position: absolute; top: 5px; right: 5px; background: none; border: none; cursor: pointer; padding: 0; margin: 0; transition: transform 0.1s;
+}
+.pixel-modal .close-btn:active { transform: scale(0.9); }
+.pixel-modal .close-btn img { width: 4vmin; height: auto; image-rendering: pixelated; }
+.pixel-modal p { margin: 0; font-size: clamp(16px, 2.5vmin, 20px); line-height: 1.6; }
+
+/* Mobile scaling for the new popups */
+@media (max-width: 1180px) {
+    #beta-tag { font-size: 4vmin; }
+    #sidebar-login-btn { font-size: 4vmin; padding: 4vmin; margin-top: 6vmin;}
+    .pixel-modal .close-btn img { width: 5.5vmin; }
+}
+@media (max-width: 900px) {
+    #beta-tag { font-size: 5vmin; }
+    .pixel-modal .close-btn img { width: 10vmin; }
+}
+
+
 
 /* ==========================================================================
    2. TOUCH DEVICES (SYSTEM SPECIFIC)
