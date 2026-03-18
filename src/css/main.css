@@ -111,7 +111,7 @@ button, input, #task-input-container, #speech-bubble {
 .sidebar-notes-label { font-size: 1.5vmin; margin-bottom: 2px; font-family: 'PixelFont3', sans-serif; color: var(--ui-text-primary); }
 
 #menu-btn { position: absolute; top: 4vmin; right: 4vmin; z-index: 10000; }
-#menu-btn img { width: 6vmin; height: auto; image-rendering: pixelated; }
+#menu-btn img { width: 5vmin; height: auto; image-rendering: pixelated; }
 
 #close-sidebar-btn { position: absolute; top: 2vmin; right: 2vmin; background: none !important; border: none !important; padding: 0 !important; z-index: 100003; cursor: pointer; }
 #close-sidebar-btn img { width: 5vmin; height: auto; image-rendering: pixelated; }
@@ -150,30 +150,56 @@ button, input, #task-input-container, #speech-bubble {
 
 /* --- TIMER TOGGLE BUTTON --- */
 #timer-mode-btn {
-    background: transparent; border: none; font-family: 'PixelFont3', sans-serif;
-    font-size: 2.2vmin; color: var(--ui-text-secondary); cursor: pointer;
-    display: flex; justify-content: flex-end; align-items: center; gap: 1vmin; 
-    width: 100%; margin-bottom: 1vmin; transition: color 0.2s;
-    text-shadow: 2px 2px 0px var(--ui-box);
+    background: transparent; 
+    border: none; 
+    cursor: pointer;
+    padding: 0;
+    display: flex;
 }
 #timer-mode-btn:hover { color: var(--ui-text-primary); }
-#timer-mode-btn img { width: 5vmin; height: auto; image-rendering: pixelated; transition: transform 0.1s; }
-#timer-mode-btn:active img { transform: translateY(2px); }
+#timer-mode-btn img { 
+    width: 5vmin; 
+    height: auto; 
+    image-rendering: pixelated; 
+    transition: transform 0.1s; 
+}
+#timer-mode-btn:active img { 
+    transform: translateY(2px); 
+}
+
+#timer-mode-wrapper {
+    display: flex; 
+    justify-content: flex-end; 
+    align-items: center; 
+    gap: 1vmin; 
+    width: 100%; 
+    margin-bottom: 1vmin;
+}
+
+#timer-mode-label {
+    font-family: 'PixelFont3', sans-serif;
+    font-size: 2.2vmin; 
+    color: var(--ui-text-secondary);
+    text-shadow: 2px 2px 0px var(--ui-box);
+}
 
 
 /* --- BETA TAG --- */
 #beta-tag {
     font-size: 3vmin;
-    background: #FFB800; /* Cool retro yellow */
+    background: #FFB800; 
     color: #0B0B1A;
     padding: 0.2vmin 1vmin;
     border-radius: 4px;
     vertical-align: super;
     cursor: pointer;
-    text-shadow: none; /* Removes the heavy shadow from the title */
+    text-shadow: none; 
     transition: transform 0.1s;
     display: inline-block;
     margin-left: 1vmin;
+    
+    /* 🚀 THIS IS THE FIX: Makes the tag solid so it can actually be clicked */
+    pointer-events: auto; 
 }
 #beta-tag:active { transform: scale(0.9); }
 
@@ -196,7 +222,7 @@ button, input, #task-input-container, #speech-bubble {
     position: fixed !important;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%) !important;
-    width: 85vw; max-width: 450px;
+    width: 85vw; max-width: 600px;
     z-index: 200000; text-align: center; box-sizing: border-box;
     padding: 40px 24px 24px 24px;
     flex-direction: column; align-items: center; justify-content: center; gap: 15px;
@@ -267,29 +293,6 @@ button, input, #task-input-container, #speech-bubble {
 }
 
 /* ==========================================================================
-   4. MOBILE PORTRAIT (PHONES VERTICAL)
-   ========================================================================== */
-@media (max-width: 900px) {
-    #title { font-size: 10vmin; }
-    #menu-btn img { width: 11vmin; }
-
-    #task-sidebar { width: 100vw !important; max-width: 100vw !important; }
-    #task-sidebar h2, .sidebar-header h2 { font-size: 8vmin !important; }
-    .sidebar-task-times, .sidebar-task-notes { font-size: 4vmin !important; }
-    .sidebar-notes-label { font-size: 4.5vmin !important; }
-    
-    #close-sidebar-btn img { width: 8vmin !important; }
-    .task-actions button img, .task-actions img, .play-btn img, .start-task-btn img { width: 8vmin !important; height: auto !important; }
-
-    #continue-popup { width: 90vw; padding: 40px 20px 20px 20px; }
-    #continue-popup .close-btn img { width: 10vmin; }
-    
-    #timer-mode-btn { font-size: 3.5vmin; }
-    #timer-mode-btn img { width: 10vmin; }
-    .cloud-img { min-width: 35vw !important; transform: translateY(10vh) !important; }
-}
-
-/* ==========================================================================
    5. MOBILE LANDSCAPE (PHONES HORIZONTAL)
    ========================================================================== */
 @media screen and (orientation: landscape) and (max-height: 600px) {
@@ -298,5 +301,57 @@ button, input, #task-input-container, #speech-bubble {
     
     /* Ensure the sidebar doesn't look ridiculous horizontally */
     #task-sidebar { width: 60vw !important; }
-    #timer-mode-btn img { width: 6vmin; }
+    #timer-mode-btn img { width: 10vmin; }
+    #menu-btn img { width: 9.5vmin; }
+    
+    /* 🚀 NEW: Make the STOPWATCH text readable horizontally */
+    #timer-mode-label {font-size: 3.9vmin;}
+
+    /* 🚀 NEW: Force the Popup Text to scale up horizontally */
+    .pixel-modal { padding: 5vmin 3vmin 3vmin 3vmin !important; width: 90vw !important; }
+    .pixel-modal h2 { font-size: 8vmin !important; }
+    .pixel-modal p, .pixel-modal ul { font-size: 5.5vmin !important; }
+    .pixel-modal li { margin-bottom: 2vmin; line-height: 1.4; }
+    .pixel-modal .close-btn img { width: 8vmin !important; }
+    
+}
+
+/* ==========================================================================
+   4. MOBILE PORTRAIT (PHONES VERTICAL)
+   ========================================================================== */
+@media (max-width: 900px) {
+    /* 🚀 HEADER FIX: Shrink slightly and wrap before hitting the button */
+    #title { 
+        font-size: 8.5vmin !important; 
+        max-width: 75vw; /* Forces the text to wrap if it gets too long */
+        line-height: 1.2;
+    }
+    #beta-tag { 
+        font-size: 4.5vmin !important; 
+        margin-top: 1vmin; /* Adds spacing if it wraps to the next line */
+        vertical-align: middle;
+    }
+    
+    #menu-btn img { width: 10vmin; }
+
+    /* --- SIDEBAR SCALING --- */
+    #task-sidebar { width: 100vw !important; max-width: 100vw !important; }
+    #task-sidebar h2, .sidebar-header h2 { font-size: 8vmin !important; }
+    .sidebar-task-times, .sidebar-task-notes { font-size: 4vmin !important; }
+    .sidebar-notes-label { font-size: 4.5vmin !important; }
+    #close-sidebar-btn img { width: 8vmin !important; }
+    .task-actions button img, .task-actions img, .play-btn img, .start-task-btn img { width: 8vmin !important; height: auto !important; }
+
+    /* 🚀 POPUP TEXT FIX: Overriding the inline HTML styles so it is readable */
+    .pixel-modal { width: 90vw !important; padding: 40px 20px 20px 20px !important; }
+    .pixel-modal p { font-size: 4.5vmin !important; }
+    .pixel-modal ul { font-size: 4.5vmin !important; margin-top: 3vmin !important; }
+    .pixel-modal li { margin-bottom: 2vmin; line-height: 1.4; }
+    .pixel-modal .close-btn img { width: 9vmin !important; }
+    
+    /* --- TIMER & CLOUDS --- */
+    #timer-mode-btn { font-size: 3.5vmin; }
+    #timer-mode-btn img { width: 10vmin; }
+    .cloud-img { min-width: 35vw !important; transform: translateY(10vh) !important; }
+    #timer-mode-label {font-size: 3.9vmin;}
 }

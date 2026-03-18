@@ -21,6 +21,13 @@ import { createClient } from '@supabase/supabase-js';
         world.sortableChildren = true; 
         app.stage.addChild(world);
 
+        app.stage.eventMode = 'static';
+        app.stage.hitArea = { contains: () => true }; // Makes the whole screen clickable
+        app.stage.on('pointerdown', (e) => {
+            const pos = world.toLocal(e.global);
+            console.log(`📍 Clicked: { x: ${Math.round(pos.x)}, y: ${Math.round(pos.y)} }`);
+        });
+
         const repoPath = '/'; 
         const directions = ['north_east', 'south_east', 'south_west', 'north_west'];
         const assetPaths = [
@@ -35,11 +42,15 @@ import { createClient } from '@supabase/supabase-js';
             repoPath + 'assets/room_base_night_lamp_MASK.png',
             repoPath + 'assets/animations/room_base_sofa_sleeping-sheet.png',
             repoPath + 'assets/animations/room_base_sofa_sitting.png',
-            repoPath + 'assets/animations/angad_coffee_sipping.png'
+            repoPath + 'assets/animations/angad_coffee_sipping.png',
+            repoPath + 'assets/studying-keyboard.png',
+            repoPath + 'assets/pushups.png'
         ];
         directions.forEach(dir => assetPaths.push(`${repoPath}assets/animations/angad_character_${dir}.png`));
 
         const textures = await Assets.load(assetPaths);
+
+        
 
         const env = setupEnvironment(world, textures);
         const characterEngine = setupCharacter(world, textures, env);
@@ -137,16 +148,29 @@ import { createClient } from '@supabase/supabase-js';
 
         // --- DAILY SCHEDULE LOGIC ---
         function getScheduledState(hour, minute, engine) {
+            // Sleep schedule
             if (hour >= 22 || hour < 7) return engine.STATES.SLEEPING;
-            if (hour >= 7 && hour < 10) return (minute < 30) ? engine.STATES.SIPPING_COFFEE : engine.STATES.WATCHING_TV;
+            
+            // Morning Routine
+            if (hour === 7) return engine.STATES.SIPPING_COFFEE;
+            if (hour === 8) return engine.STATES.WORKING_OUT; 
+            if (hour === 9) return engine.STATES.WATCHING_TV;
+            
+            // Mid-day deep work block
             if (hour >= 10 && hour < 14) return (minute < 50) ? engine.STATES.WORKING : engine.STATES.SIPPING_COFFEE;
+            
+            // Afternoon nap
             if (hour === 14) return engine.STATES.SLEEPING;
+            
+            // Evening rotation (Now includes workouts!)
             if (hour >= 15 && hour < 22) {
-                const block = hour % 3;
+                const block = hour % 4;
                 if (block === 0) return engine.STATES.WORKING;       
-                if (block === 1) return engine.STATES.WATCHING_TV;   
-                if (block === 2) return engine.STATES.SIPPING_COFFEE;
+                if (block === 1) return engine.STATES.WORKING_OUT;   
+                if (block === 2) return engine.STATES.WATCHING_TV;   
+                if (block === 3) return engine.STATES.SIPPING_COFFEE;
             }
+            
             return engine.STATES.IDLE;
         }
 
@@ -156,7 +180,7 @@ import { createClient } from '@supabase/supabase-js';
 
         let manualOverride = false;
 
-        /*
+
         // --- GLOBAL DEBUG HOTKEYS ---
         
         window.addEventListener('keydown', (e) => {
@@ -188,8 +212,12 @@ import { createClient } from '@supabase/supabase-js';
                 if (e.key === '9') characterEngine.command(characterEngine.STATES.SIPPING_COFFEE, env, weatherControls);
                 if (e.key === '0') characterEngine.command(characterEngine.STATES.WATCHING_TV, env, weatherControls);
             }
+
+            if (e.key.toLowerCase() === 'p') {
+                manualOverride = true; // Stops the schedule from interrupting you
+                characterEngine.command(characterEngine.STATES.WORKING_OUT, env, weatherControls);
+            }
         });
-        */
 
         // --- AUTONOMOUS 24/7 ROUTINE CLOCK ---
         setInterval(() => {

@@ -38,7 +38,8 @@ export function setupCharacter(world, textures, env) {
     const LOC = {
         DESK:   { x: 80, y: 35 },
         BED:    { x: -50, y: 100 },
-        COFFEE: { x: 254, y: 132 }
+        COFFEE: { x: 254, y: 132 },
+        FLOOR:  { x: -170, y: 110 }
     };
 
     let currentLocation = 'DESK'; 
@@ -86,7 +87,49 @@ export function setupCharacter(world, textures, env) {
         { x: 228, y: 145 }, // SE: The exact mathematical corner to reach the table! (+104 X, +52 Y)
         LOC.COFFEE          // NE: Arrive perfectly at the table (+26 X, -13 Y)
     ];
+
+    // 🏋️ THE PERFECT 2:1 PUSHUP ROUTE
+    const BED_TO_FLOOR = [
+        { x: -100, y: 75 }, // NW: Turns much earlier now! (-50 X, -25 Y)
+        LOC.FLOOR           // SW: Walks down towards the vacuum (-70 X, +35 Y)
+    ];
+
+    const FLOOR_TO_BED = [
+        { x: -100, y: 75 }, // NE: Walk back to the new turn point (+70 X, -35 Y)
+        LOC.BED             // SE: Walk the short distance back to bed (+50 X, +25 Y)
+    ];
+
+    const COFFEE_TO_FLOOR = [ 
+        { x: 228, y: 145 }, // SW: Step away from the table
+        { x: 124, y: 93 },  // NW: Walk up the kitchen edge
+        { x: 148, y: 81 },  // NE: Walk behind the couch
+        { x: 68, y: 41 },   // NW: Walk up the center aisle
+        LOC.BED,
+        { x: -100, y: 75 },
+        LOC.FLOOR          // THE NUDGE: Move +3 pixels Y to update his sprite!
+    ];
     
+    const FLOOR_TO_COFFEE = [
+        { x: -100, y: 75 },
+        LOC.BED,
+        { x: 68, y: 41 },
+        { x: 148, y: 81 },
+        { x: 124, y: 93 },
+        { x: 228, y: 145 },
+        LOC.COFFEE
+    ]
+
+    const DESK_TO_FLOOR = [
+        LOC.BED,
+        { x: -100, y: 75 },
+        LOC.FLOOR    
+    ]
+
+    const FLOOR_TO_DESK = [
+        { x: -100, y: 75 },
+        LOC.BED,
+        LOC.DESK
+    ]
 
 
     function getRoute(from, to) {
@@ -96,7 +139,14 @@ export function setupCharacter(world, textures, env) {
         if (from === 'DESK' && to === 'COFFEE') return DESK_TO_COFFEE;
         if (from === 'COFFEE' && to === 'DESK') return COFFEE_TO_DESK;
         if (from === 'BED' && to === 'COFFEE') return BED_TO_COFFEE; 
-        if (from === 'COFFEE' && to === 'BED') return COFFEE_TO_BED 
+        if (from === 'COFFEE' && to === 'BED') return COFFEE_TO_BED;
+        if (from === 'BED' && to === 'FLOOR') return BED_TO_FLOOR;
+        if (from === 'FLOOR' && to === 'BED') return FLOOR_TO_BED;
+        if (from === 'DESK' && to === 'FLOOR') return DESK_TO_FLOOR;
+        if (from === 'FLOOR' && to === 'DESK') return FLOOR_TO_DESK;
+        if (from === 'COFFEE' && to === 'FLOOR') return COFFEE_TO_FLOOR;
+        if (from === 'FLOOR' && to === 'COFFEE') return FLOOR_TO_COFFEE;
+    
         return [];
     }
 
@@ -106,6 +156,8 @@ export function setupCharacter(world, textures, env) {
         if (env.sofaSleeping) { env.sofaSleeping.visible = false; env.sofaSleeping.stop(); }
         if (env.sofaSitting) { env.sofaSitting.visible = false; env.sofaSitting.stop(); }
         if (env.coffeeSipping) { env.coffeeSipping.visible = false; env.coffeeSipping.stop(); }
+        if (env.keyboardAnim) { env.keyboardAnim.visible = false; env.keyboardAnim.stop(); }
+        if (env.pushupAnim) { env.pushupAnim.visible = false; env.pushupAnim.stop(); } 
         char.visible = true;
     }
 
@@ -113,7 +165,7 @@ export function setupCharacter(world, textures, env) {
     char.x = LOC.DESK.x; char.y = LOC.DESK.y; 
     let pathQueue = []; 
     let targetX = char.x; let targetY = char.y;
-    const baseMoveSpeed = 0.4; 
+    const baseMoveSpeed = 0.6; 
     let onArriveCallback = null; 
 
     return {
@@ -127,7 +179,7 @@ export function setupCharacter(world, textures, env) {
 
             if (newState === STATES.SLEEPING) {
                 currentLocation = 'BED'; 
-                char.x = LOC.BED.x; char.y = LOC.BED.y; // Physically move him!
+                char.x = LOC.BED.x; char.y = LOC.BED.y; 
                 char.visible = false;
                 if (env.sofaSleeping) { env.sofaSleeping.visible = true; env.sofaSleeping.play(); }
             } else if (newState === STATES.WATCHING_TV) {
@@ -136,6 +188,11 @@ export function setupCharacter(world, textures, env) {
                 char.visible = false;
                 if (env.tv) { env.tv.visible = true; env.tv.gotoAndPlay(0); }
                 if (env.sofaSitting) { env.sofaSitting.visible = true; env.sofaSitting.play(); }
+            } else if (newState === STATES.SIPPING_COFFEE) {
+                currentLocation = 'COFFEE'; 
+                char.x = LOC.COFFEE.x; char.y = LOC.COFFEE.y;
+                char.visible = false;
+                if (env.coffeeSipping) { env.coffeeSipping.visible = true; env.coffeeSipping.play(); }
             } else if (newState === STATES.WORKING) {
                 currentLocation = 'DESK'; 
                 char.x = LOC.DESK.x; char.y = LOC.DESK.y;
@@ -143,15 +200,15 @@ export function setupCharacter(world, textures, env) {
                 if (char.textures !== animations['north_east']) {
                     char.textures = animations['north_east'];
                 }
-
-                char.visible = true; // STAY VISIBLE!
+                char.visible = false; 
                 char.gotoAndStop(0);
                 if (env.computer) { env.computer.visible = true; env.computer.gotoAndPlay(0); }
-            } else if (newState === STATES.SIPPING_COFFEE) {
-                currentLocation = 'COFFEE'; 
-                char.x = LOC.COFFEE.x; char.y = LOC.COFFEE.y;
+                if (env.keyboardAnim) { env.keyboardAnim.visible = true; env.keyboardAnim.play(); }
+            } else if (newState === STATES.WORKING_OUT) {
+                currentLocation = 'FLOOR'; 
+                char.x = LOC.FLOOR.x; char.y = LOC.FLOOR.y;
                 char.visible = false;
-                if (env.coffeeSipping) { env.coffeeSipping.visible = true; env.coffeeSipping.play(); }
+                if (env.pushupAnim) { env.pushupAnim.visible = true; env.pushupAnim.play(); }
             }
         },
 
@@ -163,6 +220,7 @@ export function setupCharacter(world, textures, env) {
             let targetLocation = 'DESK';
             if (newState === STATES.SLEEPING || newState === STATES.WATCHING_TV) targetLocation = 'BED';
             if (newState === STATES.SIPPING_COFFEE) targetLocation = 'COFFEE';
+            if (newState === STATES.WORKING_OUT) targetLocation = 'FLOOR';
 
             const route = getRoute(currentLocation, targetLocation);
             currentLocation = targetLocation;
@@ -180,7 +238,7 @@ export function setupCharacter(world, textures, env) {
                     if (env.sofaSitting) { env.sofaSitting.visible = true; env.sofaSitting.play(); }
                 } 
                 else if (newState === STATES.WORKING && env.computer) { 
-                    char.visible = true; // STAY VISIBLE!
+                    char.visible = false; // STAY VISIBLE!
 
                     if (char.textures !== animations['north_east']) {
                         char.textures = animations['north_east'];
@@ -188,14 +246,21 @@ export function setupCharacter(world, textures, env) {
                     
                     char.gotoAndStop(0);
                     env.computer.visible = true; env.computer.gotoAndPlay(0); 
+
+                    if (env.keyboardAnim) { env.keyboardAnim.visible = true; env.keyboardAnim.play(); }
                 } 
                 else if (newState === STATES.SIPPING_COFFEE && env.coffeeSipping) { 
                     char.visible = false;
                     env.coffeeSipping.visible = true; env.coffeeSipping.play(); 
+                }else if (newState === STATES.WORKING_OUT && env.pushupAnim) { 
+                    char.visible = false;
+                    env.pushupAnim.visible = true; env.pushupAnim.play(); 
                 }
                 else {
                     char.visible = true; char.gotoAndStop(0);
                 }
+
+                
             });
         },
         

@@ -89,6 +89,38 @@ export function setupEnvironment(world, textures) {
         envContainer.addChild(coffeeSipping);
     }
 
+    const keyboardFrames = createFrames(getTex('studying-keyboard.png'), 2); 
+    let keyboardAnim = null;
+
+    if (keyboardFrames.length > 0) {
+        keyboardAnim = new AnimatedSprite(keyboardFrames);
+        keyboardAnim.anchor.set(0.5, 0.5);
+        
+        keyboardAnim.x = -20; 
+        keyboardAnim.y = 10; 
+        
+        keyboardAnim.zIndex = 49; // Sits slightly above the computer/desk
+        keyboardAnim.animationSpeed = 0.08; 
+        keyboardAnim.loop = true;
+        keyboardAnim.visible = false; 
+        envContainer.addChild(keyboardAnim);
+    }
+
+    const pushupFrames = createFrames(getTex('pushups.png'), 8); // Change '2' to your actual frame count!
+    let pushupAnim = null;
+
+    if (pushupFrames.length > 0) {
+        pushupAnim = new AnimatedSprite(pushupFrames);
+        pushupAnim.anchor.set(0.5, 0.5);
+        
+        
+        pushupAnim.zIndex = 500; // Standard character level
+        pushupAnim.animationSpeed = 0.08; 
+        pushupAnim.loop = true;
+        pushupAnim.visible = false; 
+        envContainer.addChild(pushupAnim);
+    }
+
    
     const compStartupFrames = createFrames(getTex('Computer_turn_on.png'), 7);
     const compTypingFrames = createFrames(getTex('Computer_TYPING.png'), 12);
@@ -186,5 +218,5 @@ export function setupEnvironment(world, textures) {
     }
 
     // Return the envContainer and the new hiddenPolygon!
-    return { envContainer, room, computer, tv, leakyTap, hiddenPolygon, nightOverlay, sofaSleeping, sofaSitting, coffeeSipping };
+    return { envContainer, room, computer, tv, leakyTap, hiddenPolygon, nightOverlay, sofaSleeping, sofaSitting, coffeeSipping, keyboardAnim, pushupAnim};
 }

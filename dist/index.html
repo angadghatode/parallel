@@ -22,8 +22,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/mobile-drag-drop@2.3.0-rc.2/index.min.js"></script>
-      <script type="module" crossorigin src="/assets/index-CgLeIVj1.js"></script>
-      <link rel="stylesheet" crossorigin href="/assets/index-BeRHSKYM.css">
+      <script type="module" crossorigin src="/assets/index-BMwX_M4m.js"></script>
+      <link rel="stylesheet" crossorigin href="/assets/index-DJsA0Q7h.css">
     </head>
     <body>
         <div id="app-container">
@@ -38,7 +38,7 @@
         <div id="youtube-player" style="position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px;"></div>
         
         <div id="ui-overlay" style="opacity: 0; transition: opacity 1s ease;" >
-            <div id="title">ANGAD'S ROOM</div>
+            <div id="title">ANGAD'S ROOM <span id="beta-tag">BETA</span></div>
             <div id="live-clock"></div>
             <div id="live-weather-text"></div>
 
@@ -64,10 +64,12 @@
                 <button id="queue-btn" class="text-btn" style="width: 100%; margin-top: 2vmin; padding: 1.5vmin; border: 2px dashed var(--ui-text-secondary); background: transparent; color: var(--ui-text-secondary); cursor: pointer;">+ QUEUE TASK</button>
                 
                 <p id="estimated-finish" style="margin: 20px 0 0 0; font-size: 2vmin; color: var(--ui-text-secondary); text-align: center;">EST FINISH: --:--</p>
+                
+                <button id="sidebar-login-btn">LOGIN</button>
             </div>
 
             <div id="timer-box">
-            <button id="timer-mode-btn" title="Cycle Timer Mode">
+                <button id="timer-mode-btn" title="Cycle Timer Mode">
                     <span id="timer-mode-label">25 MIN POMODORO</span>
                     <img src="/assets/button_change.png" alt="Change Mode">
                 </button>
@@ -93,23 +95,46 @@
                 <div id="speech-bubble-tail-inner"></div>
             </div>
 
-        </div> </div> <div id="loading-screen">
+        </div> 
+    </div> 
+    
+    <div id="loading-screen">
         <div class="loading-text">LOADING...</div>
     </div>
 
-    <div id="continue-popup" style="display: none; position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; z-index: 999999 !important; width: 90vw; max-width: 450px; text-align: center; background: var(--ui-box); border: 4px solid var(--ui-border); padding: 4vmin; box-sizing: border-box;">
-        
+    <div id="continue-popup" class="pixel-modal" style="display: none;">
         <button class="close-btn" id="popup-close-btn">
             <img src="/assets/close.png" alt="Close">
         </button>
-
-        <p style="margin-bottom: 2vmin;">Break over! Resume current task or continue with next task?</p>
-        
-        <div style="display: flex; justify-content: center; gap: 4vmin;">
-            <button id="btn-resume-task" class="img-btn"><img src="/assets/button.png" alt="Play"></button>
-            <button id="btn-next-task" class="img-btn"><img src="/assets/button_next.png" alt="Skip"></button>
+        <h2 style="margin: 0; color: var(--ui-text-primary); font-size: 4vmin;">TIME'S UP!</h2>
+        <p>Ready for the next block?</p>
+        <div>
+            <button id="btn-resume-task" class="text-btn">RESUME</button>
+            <button id="btn-next-task" class="text-btn">NEXT TASK</button>
         </div>
     </div>
-  
+
+    <div id="beta-popup" class="pixel-modal" style="display: none;">
+        <button class="close-btn" id="beta-close-btn">
+            <img src="/assets/close.png" alt="Close">
+        </button>
+        <h2 style="margin: 0; color: var(--ui-text-primary); font-size: 4vmin;">EARLY ACCESS</h2>
+        <p>Welcome to Parallel! This is an early build. Here is what is being wired up next:</p>
+        <ul style="text-align: left; margin-top: 10px; font-size: 2.2vmin; color: var(--ui-text-secondary); list-style-position: inside;">
+            <li>☁️ Supabase Cloud Saving</li>
+            <li>🤖 Interactive AI Task Assistant</li>
+            <li>🏆 User Accounts & Streak Tracking</li>
+            <li>🛋️ More character animations</li>
+        </ul>
+    </div>
+
+    <div id="login-popup" class="pixel-modal" style="display: none;">
+        <button class="close-btn" id="login-close-btn">
+            <img src="/assets/close.png" alt="Close">
+        </button>
+        <h2 style="margin: 0; color: var(--ui-text-primary); font-size: 4vmin;">COMING SOON</h2>
+        <p>User accounts and cloud database saving are currently under construction! Check back soon.</p>
+    </div>
+
   </body>
 </html>
